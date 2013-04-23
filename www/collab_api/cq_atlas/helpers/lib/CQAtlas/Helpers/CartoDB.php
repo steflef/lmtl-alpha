@@ -62,23 +62,23 @@ class CartoDB
             ),
             'output_exp'=>array(
                 'dataset_id' => array(
-                    'func' => 'dataset',
+                    'func' => 'Dataset',
                     'dependency' => 'dataset_id'
                 ),
                 'primary_category_id' => array(
-                    'func' => 'category',
+                    'func' => 'Category',
                     'dependency' => 'primary_category_id'
                 ),
                 'secondary_category_id' => array(
-                    'func' => 'category',
+                    'func' => 'Category',
                     'dependency' => 'secondary_category_id'
                 ),
                 'tags' => array(
-                    'func' => 'json2array',
+                    'func' => 'Json2array',
                     'dependency' => 'tags'
                 ),
                 'the_geom' => array(
-                    'func' => 'json2array',
+                    'func' => 'Json2array',
                     'dependency' => 'the_geom'
                 )
             )
@@ -140,23 +140,23 @@ class CartoDB
             ),
             'output_exp'=>array(
                 'primary_category_id' => array(
-                    'func' => 'category',
+                    'func' => 'Category',
                     'dependency' => 'primary_category_id'
                 ),
                 'secondary_category_id' => array(
-                    'func' => 'category',
+                    'func' => 'Category',
                     'dependency' => 'secondary_category_id'
                 ),
                 'tertiary_category_id' => array(
-                    'func' => 'category',
+                    'func' => 'Category',
                     'dependency' => 'tertiary_category_id'
                 ),
                 'dataset_extra_fields' => array(
-                    'func' => 'json2array',
+                    'func' => 'Json2array',
                     'dependency' => 'dataset_extra_fields'
                 ),
                 'count' => array(
-                    'func' => 'count',
+                    'func' => 'Count',
                     'dependency' => 'none'
                 )
             )
