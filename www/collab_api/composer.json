@@ -1,0 +1,42 @@
+{
+    "name":"lmtl/collab-app",
+    "description":"An app to upload collections, datasets & points",
+    "keywords":[
+        "places",
+        "map",
+        "montreal"
+    ],
+    "homepage":"http://github.com/steflef/lmtl",
+    "license":"MIT",
+    "authors":[
+        {
+            "name":"Stef Lef",
+            "email":"info@steflef.com",
+            "homepage":"http://www.steflef.com/"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://packages.zendframework.com/"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "CQAtlas\\Helpers": "cq_atlas/helpers/lib",
+            "CQAtlas\\Middlewares": "cq_atlas/middlewares/lib",
+            "CQAtlas\\Dataset": "cq_atlas/dataset/src"
+        }
+    },
+    "require":{
+        "slim/slim":"2.*",
+        "slim/extras":"2.*",
+        "codeguy/upload":"*",
+        "pimple/pimple": "v1.0.2",
+        "twitter/bootstrap":"dev-master",
+        "aura/sql":"dev-develop",
+        "guzzle/guzzle":"3.1.*@dev",
+        "CodePlex/PHPExcel":"dev-master",
+        "ddeboer/data-import": "dev-master"
+    }
+}

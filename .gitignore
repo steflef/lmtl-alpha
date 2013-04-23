@@ -1,0 +1,32 @@
+# PHPStorm project
+*.idea
+/schema/sqlite-jdbc-3.7.2.jar
+/schema/lmtl.v1.sql
+
+# Composer
+/www/collab_api/composer.lock
+/www/collab_api/composer.phar
+
+# Docs
+/docs
+
+# Config
+/www/collab_api/cq_atlas/config/
+
+# Models, cleanup first
+/www/collab_api/models/
+
+# Vendor
+/www/collab_api/vendor/
+
+# Public Fonts
+/www/collab_api/public/webfonts/
+
+# Javascript External libs
+/www/collab_api/public/js/libs/
+
+#storage
+/www/collab_api/storage/
+
+#icons
+/www/collab_api/public/img/icons/
