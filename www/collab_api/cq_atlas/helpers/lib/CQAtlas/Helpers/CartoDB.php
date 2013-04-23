@@ -313,7 +313,7 @@ class CartoDB
         $datasetsfields = $this->getFields('datasets');
         $placesfields = $this->getFields('places');
 
-        $fixDatas = [];
+        $fixDatas = array();
         foreach ($datas as $key=>$value) {
             $fixDatas[$key] = $value;
             //$fixDatas[$key]['longitude'] = $value['lon'];
@@ -321,7 +321,7 @@ class CartoDB
         }
         $datas = $fixDatas;
 
-        $dataset_extra_fields = [];
+        $dataset_extra_fields = array();
         foreach ($datas[0] as $key=>$data) {
             //echo "$key > $data <br>";
             if( !in_array($key,$placesfields) && substr($key,0,1) !== '_'){
@@ -331,7 +331,7 @@ class CartoDB
 
         $metas->dataset_extra_fields = json_encode($dataset_extra_fields);
 
-        $newDataset = [];
+        $newDataset = array();
         foreach ($datasetsfields as $field) {
             if( array_key_exists($field,$metas) ){
                 $newDataset[$field] = $metas->$field;
