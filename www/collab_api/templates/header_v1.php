@@ -12,20 +12,13 @@
     <![endif]-->
 
     <link rel="stylesheet" href="./public/style/bootstrap.css">
-    <link rel="stylesheet" href="./public/js/libs/leaflet/0.5.1/leaflet.css"/>
-    <link rel="stylesheet" href="./public/js/libs/leaflet/markercluster/MarkerCluster.css"/>
-    <link rel="stylesheet" href="./public/js/libs/leaflet/markercluster/MarkerCluster.Default.css"/>
-
-    <link rel="stylesheet" type="text/css" href="./public/js/libs/chosen/chosen.css" />
-
+    <link rel="stylesheet" href="./public/js/libs/leaflet/0.5.1/leaflet.css">
+    <link rel="stylesheet" href="./public/js/libs/leaflet/markercluster/MarkerCluster.css">
+    <link rel="stylesheet" href="./public/js/libs/leaflet/markercluster/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="./public/js/libs/chosen/chosen.css">
     <link rel="stylesheet" href="./public/js/libs/overlay/css/custom.css">
     <link rel="stylesheet" href="./public/js/libs/overlay/css/iosOverlay.css">
 
-    <style type="text/css">
-/*        .leaflet-left .leaflet-control {
-            margin-left: 400px;
-        }*/
-    </style>
     <!--[if lte IE 8]>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.ie.css"/>
     <!--<link rel="stylesheet" href="/public/js/libs/leaflet/markercluster/MarkerCluster.Default.ie.css"/>-->
@@ -62,11 +55,9 @@
     <script type="text/javascript" src="./public/js/libs/bootstrap/bootstrap-transition.js"></script>
     <script type="text/javascript" src="./public/js/libs/bootstrap/bootstrap-modal.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-
     <script type="text/javascript" src="./public/js/libs/chosen/chosen.jquery.min.js"></script>
-
-    <script src="./public/js/libs/overlay/js/iosOverlay.js"></script>
-    <script src="./public/js/libs/overlay/js/spin.min.js"></script>
+    <script type="text/javascript" src="./public/js/libs/overlay/js/iosOverlay.js"></script>
+    <script type="text/javascript" src="./public/js/libs/overlay/js/spin.min.js"></script>
 </head>
 <body>
 
