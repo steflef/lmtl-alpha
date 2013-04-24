@@ -12,10 +12,10 @@
     <![endif]-->
 
     <link rel="stylesheet" href="./public/style/bootstrap.css">
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.css"/>
+    <link rel="stylesheet" href="./public/js/libs/leaflet/0.5.1/leaflet.css"/>
     <link rel="stylesheet" href="./public/js/libs/leaflet/markercluster/MarkerCluster.css"/>
     <link rel="stylesheet" href="./public/js/libs/leaflet/markercluster/MarkerCluster.Default.css"/>
-    <link rel="stylesheet" href="./public/style/chosen.css"/>
+    <link rel="stylesheet" href="./public/js/libs/chosen/chosen.css" />
     <link rel="stylesheet" href="./public/js/libs/ng-grid/ng-grid.css"/>
 
     <link rel="stylesheet" href="./public/js/libs/overlay/css/custom.css">
@@ -73,32 +73,22 @@
 
     </script>
 
-    <script type="text/javascript" src="//code.angularjs.org/1.0.1/angular-1.0.1.min.js"></script>
-    <script type="text/javascript" src="http://code.angularjs.org/1.0.1/angular-sanitize-1.0.1.min.js"></script>
+    <script type="text/javascript" src="./public/js/libs/angularjs/1.1.4/angular.min.js"></script>
+    <script type="text/javascript" src="./public/js/libs/angularjs/1.1.4/angular-sanitize.min.js"></script>
+    <script type="text/javascript" src="./public/js/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="./public/js/libs/underscore/1.4.4/underscore-min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script type="text/javascript" src="./public/js/libs/chosen/chosen.jquery.min.js"></script>
-    <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
-<!--    <script type="text/javascript" src="{base_url}public/js/libs/modernizr.custom.02427.js"></script>-->
-<!--    <script type="text/javascript" src="{base_url}public/js/ng/ctrl/evnt.js"></script>-->
-<!--    <script type="text/javascript" src="./public/js/ng/ctrl/map.js"></script>-->
-<!--    <script type="text/javascript" src="{base_url}public/js/ng/ctrl/stats.js"></script>-->
-<!--    <script type="text/javascript" src="{base_url}public/js/ng/ctrl/chart.js"></script>-->
     <script type="text/javascript" src="./public/js/ng/ctrl/toolbar.js"></script>
-    <script type="text/javascript" src="./public/js/ng/ctrl/upload.js"></script>
     <script type="text/javascript" src="./public/js/ng/services/upload.js"></script>
     <script type="text/javascript" src="./public/js/ng/app-upload.js"></script>
     <script type="text/javascript" src="./public/js/libs/ng-grid/ng-grid-1.6.3.js"></script>
 
-    <script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.js"></script>
-    <script type="text/javascript"
-            src="./public/js/libs/leaflet/markercluster/leaflet.markercluster.js"></script>
-<!--    <script type="text/javascript" src="{base_url}public/js/libs/jquery/jquery-min.js"></script>-->
+    <script type="text/javascript" src="./public/js/libs/leaflet/0.5.1/leaflet.js"></script>
+    <script type="text/javascript" src="./public/js/libs/leaflet/markercluster/leaflet.markercluster-src.js"></script>
     <script type="text/javascript" src="./public/js/libs/bootstrap/bootstrap-dropdown.js"></script>
-<!--    <script type="text/javascript" src="{base_url}public/js/libs/bootstrap/bootstrap-typeahead.js"></script>-->
-
-    <script src="./public/js/libs/overlay/js/iosOverlay.js"></script>
-    <script src="./public/js/libs/overlay/js/spin.min.js"></script>
+    <script type="text/javascript" src="./public/js/libs/overlay/js/iosOverlay.js"></script>
+    <script type="text/javascript" src="./public/js/libs/overlay/js/spin.min.js"></script>
 </head>
 <body>
 
