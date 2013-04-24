@@ -11,5 +11,4 @@ RewriteRule ^ index.php [QSA,L]
 #RewriteRule ^/?(.*)$ http://lmtl.steflef.com/$1 [R,L]
 
 #RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteCond %{SCRIPT_FILENAME} !-d
-#RewriteRule ^ index.php [QSA,L]
+#RewriteRule ^(.*)$ index.php [QSA,L]
