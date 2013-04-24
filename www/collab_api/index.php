@@ -563,7 +563,7 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
     $dataset->file_uri = $meta->uri;
 
     // User Defined Fields
-    $dataset_extra_fields = [];
+    $dataset_extra_fields = array();
     foreach ($properties as $field) {
         $dataset_extra_fields[] = array(
             'field' => $field->title,
