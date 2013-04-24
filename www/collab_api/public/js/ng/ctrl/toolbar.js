@@ -1,7 +1,6 @@
-function ToolBarCtrl($rootScope, $scope, $filter, $http) {
+function ToolBarCtrl($rootScope, $scope) {
 
     var self = $scope;
-    //$scope.baseUrl = 'http://localhost/gatlas_spring/';
     $scope.baseUrl = './';
     $scope.appTitle = 'LMTL';
     $scope.selectedIcon = '';
@@ -18,12 +17,6 @@ function ToolBarCtrl($rootScope, $scope, $filter, $http) {
             title:'Téléchargez!',
             url:'upload',
             icon:'icon-download',
-            selected:''
-        },
-        {   id:'edit',
-            title:'Édition',
-            url:'edit',
-            icon:'icon-edit',
             selected:''
         }
     ];
