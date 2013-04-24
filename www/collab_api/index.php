@@ -6,14 +6,11 @@
 // ## Namespaces
 //
 // **Slim Framework** & middleware libraries as a base,
-// **Aura.SQL** as an adapter for SQL database access,
 // **Pimple** to manage Dependency injection,
 // **Bcrypt** to help with salting and hash generation &
 // **Guzzle** as a HTTP Client
 use \Slim\Slim;
 use Slim\Middleware\SessionCookie;
-use \Aura\Sql\ConnectionFactory;
-
 
 require_once 'vendor/autoload.php';
 require_once 'models/lmtl.php'; # todo Aura Helper
@@ -60,15 +57,13 @@ $app->error(function (\Exception $e) use ($app) {
 
 // #### >> Load Config (External with GitIgnore)
 require_once('cq_atlas/config/config.php');
-// #### AURA.SQL Factory
+
+// #### Fluent.SQL Factory
 $di['db'] = $di->share(function () use ($di){
-    $connectionFactory = new ConnectionFactory;
-    $connection = $connectionFactory->newInstance(
-        $di['dbDriver'],
-        $di['dbFile']
-    );
-    $connection->connect();
-    return $connection;
+    $pdo = new PDO($di['dbDriver'].':'.$di['dbFile']);
+    $fpdo = new \FluentPDO($pdo);
+
+    return $fpdo;
 });
 // ***
 
