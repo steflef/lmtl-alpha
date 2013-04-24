@@ -34,7 +34,7 @@
         "codeguy/upload":"*",
         "pimple/pimple": "v1.0.2",
         "twitter/bootstrap":"dev-master",
-        "aura/sql":"dev-develop",
+        "lichtner/fluentpdo": "dev-master",
         "guzzle/guzzle":"3.1.*@dev",
         "CodePlex/PHPExcel":"dev-master",
         "ddeboer/data-import": "dev-master"
