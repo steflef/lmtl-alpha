@@ -188,7 +188,7 @@ $app->get("/datasets/:id/places", $apiCache($app, $di), function ($datasetId) us
 
     }catch (\Exception $e){
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
-        $Response->addContent(array('trace' => $e->getTrace()[0]));
+        //$Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -319,7 +319,7 @@ $app->get("/test/:id", $apiCache($app, $di), function ($datasetId) use ($app, $d
 
     }catch (\Exception $e){
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
-        $Response->addContent(array('trace' => $e->getTrace()[0]));
+        //$Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -358,7 +358,7 @@ function processRequest(\Slim\Slim $app, \Pimple $di, $from='', $where=''){
 
     }catch (\Exception $e){
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
-        $Response->addContent(array('trace' => $e->getTrace()[0]));
+        //$Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -524,7 +524,7 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
 
         $msg = $e->getMessage() . ' ['.$e->getLine().']';
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$msg);
-        $Response->addContent(array('trace' => $e->getTrace()[0]));
+        //$Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -581,7 +581,7 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
     }catch (Exception $e){
         $msg = $e->getMessage() . ' ['.$e->getLine().']';
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$msg);
-        $Response->addContent(array('trace' => $e->getTrace()[0]));
+        //$Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -640,7 +640,7 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
     }catch (Exception $e){
         $msg = $e->getMessage() . ' ['.$e->getLine().']';
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$msg);
-        $Response->addContent(array('trace' => $e->getTrace()[0]));
+        //$Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -840,7 +840,8 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
         }
 
     }catch (\Exception $e){
-        $msg = $e->getMessage(). ' :: ' . $e->getLine() . ' :: '. $e->getTraceAsString();
+        //$msg = $e->getMessage(). ' :: ' . $e->getLine() . ' :: '. $e->getTraceAsString();
+        $msg = $e->getMessage(). ' :: ' . $e->getLine();
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$msg);
         $Response->setContentType('text/html'); #iFrame Fix
         $Response->show();
