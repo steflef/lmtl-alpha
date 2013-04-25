@@ -14,25 +14,20 @@ CREATE TABLE places
   address character varying(255),
   city character varying(255),
   latitude double precision,
-  location text,
   longitude double precision,
   postal_code character varying(7),
   tel_number character varying(255),
   website character varying(255),
 
   -- Metadata
+
   created_by integer, -- user_id
   dataset_id integer, -- maybe dataset_id varying (255) NOT NULL,
-  desc_en text,
-  desc_fr text,
-  label varying(255),
-  name_en character varying(255) NOT NULL,
-  name_fr character varying(255) NOT NULL,
-  place_id serial NOT NULL,
+  description text,
+  name character varying(255) NOT NULL,
+  id serial NOT NULL,
   privacy smallint,
-  slug character varying(255) NOT NULL
   status smallint,
-  version smallint,
 
   -- Categories
   primary_category_id integer,
@@ -57,13 +52,13 @@ CREATE TABLE datasets
   _updated_at timestamp without time zone,
 
   -- Dataset Meta
-  attributions text NOT NULL, -- source
+  sources text NOT NULL, -- source
   -- bbox_4326 geography(POLYGON,4326), -- POLYGON
   collection_id integer NOT NULL,
   created_by integer NOT NULL, -- user_id
-  dataset_id serial NOT NULL, -- maybe dataset_id varchar (255) NOT NULL,
-  dataset_extra_fields TEXT, -- places/tags JSON
-  desc text NOT NULL,
+  id serial NOT NULL, -- maybe dataset_id varchar (255) NOT NULL,
+  attributes TEXT, -- places/tags JSON
+  description text NOT NULL,
   google_drive_id varchar(255),
   label varchar(255) NOT NULL,
   licence TEXT NOT NULL,
@@ -71,7 +66,7 @@ CREATE TABLE datasets
   privacy smallint,
   slug varchar(255) NOT NULL
   status smallint,
-  version smallint,
+  --version smallint,
 
   -- Categories
   primary_category_id integer,
@@ -79,7 +74,7 @@ CREATE TABLE datasets
   tertiary_category_id integer,
 
   -- Stats
-  downloaded_count integer DEFAULT 0,
+  -- downloaded_count integer DEFAULT 0,
 
   -- Localy Saved File infos
   file_format varchar(64),
