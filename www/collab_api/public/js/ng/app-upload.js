@@ -1,14 +1,5 @@
 angular.module('appMain', ['ngSanitize','ngUpload'])
 
-//    .config(function ($routeProvider, $locationProvider) {
-//        //$locationProvider.html5Mode(true);
-//        $routeProvider.
-//            when('/', {controller:HomeCtrl}).
-//            when('/details/:idCall', {templateUrl:"/gatlas_spring/public/js/ng/tmpl/details.html", controller:DetailsCtrl}).
-//            when('/home', {controller:HomeCtrl}).
-//            otherwise({redirectTo:'/home'});
-//    })
-
     .directive('toolbar', function () {
         var linker = function(scope) {
             scope.$broadcast('newMenu', {id:'upload'});
@@ -25,7 +16,6 @@ angular.module('appMain', ['ngSanitize','ngUpload'])
     .directive('map', function () {
 
         var linker = function(scope, element, attrs) {
-            //console.log(scope);
             scope.map = new L.Map(attrs.id, {'scrollWheelZoom':false});
             scope.map.attributionControl.setPrefix('');
             scope.markersLayer = new L.LayerGroup();
@@ -62,7 +52,6 @@ angular.module('appMain', ['ngSanitize','ngUpload'])
             },true);
 
             var _scope = scope;
-            //console.log(element);
             $(element).chosen().change( function(event, item){
 
                 scope.safeApply(function(){
