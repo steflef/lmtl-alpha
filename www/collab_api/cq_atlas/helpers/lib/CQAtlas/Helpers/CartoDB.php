@@ -394,7 +394,7 @@ exit;
             throw new \Exception('CartoDb::addDataset status '.$response->getStatusCode());
         }
 
-        $query = "SELECT MAX(dataset_id) FROM datasets;";
+        $query = "SELECT MAX(id) FROM datasets;";
         $response = $client->get('?q='.$query.'&api_key='.$this->_di['cartodb_api_key'])->send()->json();
         return $response['rows'][0]['max'];
     }
