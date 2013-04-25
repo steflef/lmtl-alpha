@@ -63,7 +63,6 @@ class ApiJsonFormatter
             foreach ($tmpl as $item=>$targetField)
             {
 
-
                 if( is_array( $targetField ) )
                 {
                     foreach ($targetField as $itemLevel2=>$level2TargetField)
@@ -141,7 +140,6 @@ class ApiJsonFormatter
                     }
                 }
 
-
                 if( is_array( $targetField) ){
                     if( empty($tempTmpl[$item])){
                         unset($tempTmpl[$item]);
@@ -154,8 +152,6 @@ class ApiJsonFormatter
             {
                 $tempTmpl['distance']=$row['distance'];
             }
-
-
 
             $output[] = $tempTmpl;
         }
