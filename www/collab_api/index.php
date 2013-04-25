@@ -12,6 +12,7 @@
 use \Slim\Slim;
 use Slim\Middleware\SessionCookie;
 
+
 require_once 'vendor/autoload.php';
 require_once 'models/lmtl.php'; # todo Aura Helper
 // ***
@@ -206,8 +207,6 @@ $app->get("/datasets/:id/places", $apiCache($app, $di), function ($datasetId) us
 // ### *JSON*
 $app->put("/datasets/:datasetId/places", function ($datasetId) use ($app, $di) {
 
-    require_once 'vendor/cqatlas/cqatlas/CqUtil.php';
-
     #1 validate fields
     $reqBody = json_decode( $app->request()->getBody(), true );
     $fields = array();
@@ -225,7 +224,7 @@ $app->put("/datasets/:datasetId/places", function ($datasetId) use ($app, $di) {
 
     $url = 'http://'.$di['cartodb_subdomain'].$di['cartodb_endpoint'];
 
-    $httpResponse = CqUtil::curlPost($url, json_encode($fields));
+    $httpResponse = \CQAtlas\Helpers\CqUtil::curlPost($url, json_encode($fields));
 
     if( $httpResponse['status'] !== 200 ){
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,'Error');
@@ -484,9 +483,8 @@ $app->get("/admin/users", $authenticate($app), function () use ($app, $di) {
 // ### *JSON*
 // Validate & publish datasets
 $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
-//$app->post("/publish",  function () use ($app, $di) {
+
     ini_set('memory_limit', '256M');
-    require_once 'vendor/cqatlas/cqatlas/CqUtil.php';
 
     # Slim Request Object
     $reqBody = json_decode( $app->request()->getBody() );
@@ -554,7 +552,7 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
             $dataset->primary_category_id = $categories[0];
             break;
     }
-    $dataset->slug = CqUtil::slugify($dataset->name);
+    $dataset->slug = \CQAtlas\Helpers\CqUtil::slugify($dataset->name);
     $dataset->file_uri = $meta->uri;
 
     // User Defined Fields
@@ -576,7 +574,7 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
     }catch (Exception $e){
         $msg = $e->getMessage() . ' ['.$e->getLine().']';
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$msg);
-        //$Response->addContent(array('trace' => $e->getTrace()[0]));
+        #$Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -677,7 +675,6 @@ $app->get("/upload", $authenticate($app), function () use ($app, $di) {
 // ##### *For Instance, a FileData Class.*
 $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
 
-    require_once 'vendor/cqatlas/cqatlas/CqUtil.php';
     $storage = new \Upload\Storage\FileSystem($di['uploadDir']);
     $file = new \Upload\File('file_upload', $storage);
 
@@ -689,7 +686,7 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
 
     // ### File Upload
     try {
-        $slugName = CqUtil::slugify($file->getName());
+        $slugName = \CQAtlas\Helpers\CqUtil::slugify($file->getName());
         $file->setName( $slugName.'_'.time() );
         $fileMime = $file->getMimetype();
         $fileSize = ($file->getSize()/1000);
@@ -795,9 +792,9 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
 
     // ### Spatial Fields Validation
     try{
-        $lonHeader = CqUtil::matchKeys($fileData['header'], array('lon','lng','longitude'));
-        $latHeader = CqUtil::matchKeys($fileData['header'], array('lat','latitude'));
-        $locationHeader = CqUtil::matchKeys($fileData['header'], array('adresse','address','addr','location','localisation'));
+        $lonHeader = \CQAtlas\Helpers\CqUtil::matchKeys($fileData['header'], array('lon','lng','longitude'));
+        $latHeader = \CQAtlas\Helpers\CqUtil::matchKeys($fileData['header'], array('lat','latitude'));
+        $locationHeader = \CQAtlas\Helpers\CqUtil::matchKeys($fileData['header'], array('adresse','address','addr','location','localisation'));
         if( $lonHeader === false || $latHeader === false){
             if( $locationHeader === false ){
                 // ##### >> STOP - No Location Field Detected
@@ -845,7 +842,6 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
 
     $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
     $metaTmpl = $CartoDB->getSchema('datasets');
-
 
     $metadata = array(
         //'name'=> '',
@@ -899,15 +895,13 @@ $app->get("/buildTaxonomy", function () use ($app, $di) {
         $count ++;
     }
 
-    require_once 'vendor/cqatlas/cqatlas/CqUtil.php';
-
     $fields = array(
         'q' => implode('',$sqlStatements),
         'api_key' => $di['cartodb_api_key']
     );
 
     $url = 'http://'.$di['cartodb_subdomain'].$di['cartodb_endpoint'];
-    $curlResult = CqUtil::curlPost($url, json_encode($fields));
+    $curlResult = \CQAtlas\Helpers\CqUtil::curlPost($url, json_encode($fields));
 
     echo '<pre><code>';
     print_r($curlResult);
@@ -920,7 +914,6 @@ $app->get("/buildTaxonomy", function () use ($app, $di) {
 // Build Categories on CartoDB via an Excel file
 $app->get("/buildCategories", function () use ($app, $di) {
 
-    require_once 'vendor/cqatlas/cqatlas/CqUtil.php';
     $sourcePath ='./storage/database/categories.xlsx';
     $Reader = new \CQAtlas\Helpers\ExcelReader($sourcePath,0);
     $rows = $Reader->getRows();
@@ -934,7 +927,7 @@ $app->get("/buildCategories", function () use ($app, $di) {
         // ##### Escape Single Quotes With an Extra Quote ' => ''#####
         $parent_fr = str_replace("'","''", $item['Regroupement']);
         $fr = str_replace("'","''", $item['Cat']);
-        $icon = CqUtil::slugify($parent_fr).'/'.CqUtil::slugify($fr).'.png';
+        $icon = \CQAtlas\Helpers\CqUtil::slugify($parent_fr).'/'.\CQAtlas\Helpers\CqUtil::slugify($fr).'.png';
         $sqlStatements[] =  $insertText . $count.",'".$parent_fr."','".$fr."','".$icon."');";
 /*        $cache[] = array(
             'id' => $count,
@@ -951,7 +944,7 @@ $app->get("/buildCategories", function () use ($app, $di) {
     );
 
     $url = sprintf('http://%s.%s', $di['cartodb_subdomain'],$di['cartodb_endpoint']);
-    $curlResult = CqUtil::curlPost($url, json_encode($fields));
+    $curlResult = \CQAtlas\Helpers\CqUtil::curlPost($url, json_encode($fields));
 
     echo '<pre><code>';
     print_r($curlResult);
