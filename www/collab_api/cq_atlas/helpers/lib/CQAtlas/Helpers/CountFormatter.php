@@ -12,6 +12,6 @@ class CountFormatter extends AbstractFormatter
     }
 
     public function getOutput(){
-        return $this->CartoDB->getPlacesCount($this->_source['dataset_id']);
+        return $this->CartoDB->getPlacesCount($this->_source['id']);
     }
 }
