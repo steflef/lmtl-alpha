@@ -12,11 +12,11 @@ class DatasetFormatter extends AbstractFormatter
 
     public function getOutput(){
 
-        $Results = $this->CartoDB->selectAll('datasets','WHERE dataset_id ='.$this->_source.' LIMIT 1');
+        $Results = $this->CartoDB->selectAll('datasets','WHERE id ='.$this->_source.' LIMIT 1');
 
         return array(
             'collection' => $Results[0]['collection'],
-            'desc' => $Results[0]['desc'],
+            'description' => $Results[0]['description'],
             'licence' => $Results[0]['licence'],
             'name' => $Results[0]['name']
         );
