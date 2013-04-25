@@ -85,6 +85,7 @@ $authenticate = function () use ($app, $di){
 // ##### RESPONSE via JSON
 $apiAuthenticate = function () use ($app, $di){
     return function () use ($app, $di) {
+
         if (!isset($_SESSION['user'])) {
             $res = $app->response();
             $res->status(200);
@@ -432,7 +433,7 @@ $app->post("/login", function () use ($app, $di) {
     $password = $app->request()->post('password');
 
     $errors = array();
-    echo '<br>'. $email. '<br>';
+    #echo '<br>'. $email. '<br>';
     $userInfos = Lmtl::getUser($di['db'],$email);
 
     if (count($userInfos) == 0) {
@@ -449,6 +450,7 @@ $app->post("/login", function () use ($app, $di) {
     }
 
     $_SESSION['user'] = $email;
+    $_SESSION['userId'] = $userInfos[0]['id'];
 
     if (isset($_SESSION['urlRedirect'])) {
         $tmp = $_SESSION['urlRedirect'];
@@ -527,11 +529,12 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
 
     $dataset->google_drive_id = '';
     $dataset->collection_id = 0;
-    $dataset->version = 1;
+    #$dataset->version = 1;
     $dataset->privacy = 1;
     $dataset->status = 0;
-    $dataset->created_by = $meta->created_by;
-    $dataset->attributions = $meta->source;
+    #$dataset->created_by = $meta->created_by;
+    $dataset->created_by = $_SESSION['userId'];
+    $dataset->sources = $meta->source;
     $dataset->licence = $meta->licence;
     $dataset->description = $meta->description;
     $dataset->name = $meta->nom;
@@ -556,15 +559,15 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
     $dataset->file_uri = $meta->uri;
 
     // User Defined Fields
-    $dataset_extra_fields = array();
+    $datasetsAttributes = array();
     foreach ($properties as $field) {
-        $dataset_extra_fields[] = array(
+        $datasetsAttributes[] = array(
             'field' => $field->title,
             'type'  => $field->type,
             'desc'  => $field->desc
         );
     }
-    $dataset->dataset_extra_fields = json_encode($dataset_extra_fields);
+    $dataset->attributes = json_encode($datasetsAttributes);
 
     $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
 
@@ -591,15 +594,13 @@ $app->post("/publish", $apiAuthenticate($app), function () use ($app, $di) {
         $attributes->address = $place->_geo->formatted_address;
         $attributes->city = trim($place->_geo->city);
         $attributes->postal_code = trim($place->_geo->postal_code);
-        $attributes->created_by = $dataset->created_by;
+        # $attributes->created_by = $dataset->created_by;
+        $attributes->created_by = $_SESSION['userId'];
         $attributes->dataset_id = $datasetId;
-        //$attributes->label = $place->properties->{$dataset->label};
         $attributes->latitude = $place->_geo->lat;
         $attributes->longitude = $place->_geo->lon;
 
-        //$attributes->name_fr = (array_key_exists('nom',$place->properties))?$place->properties->nom:'';
-        $attributes->name_fr = $place->properties->{$meta->att_name};
-        // (array_key_exists('description',$place->properties))?$place->properties->description:'';
+        $attributes->name = $place->properties->{$meta->att_name};
         $attributes->description = $place->properties->{$meta->att_description};
         $attributes->tel_number = (array_key_exists('telephone',$place->properties))?$place->properties->telephone:'';
         $attributes->website = (array_key_exists('web',$place->properties))?$place->properties->web:'';
