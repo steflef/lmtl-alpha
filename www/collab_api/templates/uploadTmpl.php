@@ -4,7 +4,6 @@
 <div ng-controller="StepperCtrl" class="container" style="padding-top: 50px;">
     <h3>Ajoutez des données!</h3>
 
-
     <?if (!empty($infos)): ?>
 <p>[$_FILES] <?= $infos ?>
     <? endif;?>
@@ -177,7 +176,7 @@
                     </div>
 
                     <div ng-show="(uMetadata.geocoded==1)" class="row">
-                        <div class="span12 map-wrapper">
+                        <div class="span12 map-upload-wrapper">
                             <div map id="mapPort" style="height: 300px;"></div>
                         </div>
 
