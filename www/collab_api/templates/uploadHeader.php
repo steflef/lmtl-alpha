@@ -24,7 +24,6 @@
     <style>
         html, body { height: 100%; }
         footer {
-          /*  padding: 0 10px 0 10px;*/
             border-top: 1px solid #eee;
             color: white;
             background-color: black;
