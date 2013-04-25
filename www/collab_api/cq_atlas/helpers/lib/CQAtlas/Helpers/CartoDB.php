@@ -12,7 +12,6 @@ class CartoDB
                 'address'   => array('type'=> 'string'),
                 'city'      => array('type' =>'string'),
                 'latitude'  => array('type' =>'number'),
-                'location'  => array('type' =>'string'),
                 'longitude' => array('type' =>'number'),
                 'the_geom'=> array('type' =>'geom'),
                 'postal_code' =>array('type' =>'string'),
@@ -113,7 +112,7 @@ class CartoDB
                 'id'        => 'id',
                 'collection' => 'collection_id',
                 'name'      => 'name',
-                'desc'   => 'description',
+                'description'   => 'description',
                 'attributions'   => 'sources',
                 'licence'   => 'licence',
                 'categories'  => array(
@@ -243,6 +242,7 @@ class CartoDB
         exit;*/
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
         $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+
 
         if($response->getStatusCode()!==200){
             throw new \Exception('CartoDb::selectAll status '.$response->getStatusCode());
@@ -441,7 +441,7 @@ exit;
 
         # Build Queries
         $fields = $this->getFields($tableName);
-        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE place_id = $placeId;";
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE id = $placeId;";
 
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
         $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
@@ -459,14 +459,12 @@ exit;
 
         # Build Queries
         $fields = array(
-            'place_id',
-            'name_fr',
+            'id',
+            'name',
             'description',
-            'label',
             'latitude',
             'longitude',
-            'primary_category_id'//,
-            //'secondary_category_id'
+            'primary_category_id'
         );
         $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE dataset_id = $datasetId;";
 
