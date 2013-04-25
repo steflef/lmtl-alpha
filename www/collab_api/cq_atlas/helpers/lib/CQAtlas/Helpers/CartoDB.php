@@ -21,27 +21,20 @@ class CartoDB
                 'created_by' => array('type' =>'number'),
                 'dataset_id' => array('type' =>'number'),
                 'description'   => array('type' =>'string'),
-
-                'label'     => array('type' =>'string'),
-                'name_fr'   => array('type' =>'string'),
-                'name_en'   => array('type' =>'string'),
-                'place_id'  => array('type' =>'number'),
+                'name'   => array('type' =>'string'),
+                'id'  => array('type' =>'number'),
                 'privacy'   => array('type' =>'number'),
-                'slug'      => array('type' =>'string'),
                 'status'    => array('type' =>'number'),
-                'version'   => array('type' =>'number'),
                 'primary_category_id' => array('type' =>'number'),
                 'secondary_category_id' => array('type' =>'number'),
                 'tags'      => array('type' =>'string'),
                 'updated_at'=> array('type' =>'string')
             ),
             'output_tmpl'=>array(
-                'id'        => 'place_id',
-                'name_fr'      => 'name_fr',
-                'name_en'      => 'name_en',
+                'id'        => 'id',
+                'name'      => 'name',
                 'dataset'   => 'dataset_id',
                 'description'   => 'description',
-                'label'     => 'label',
                 'location'  => array(
                     'address'       => 'address',
                     'city'          => 'city',
@@ -85,12 +78,12 @@ class CartoDB
         ),
         'datasets'=>array(
             'fields'=>array(
-                'attributions'=> array('type' =>'string', 'default' => 'Source:'),
+                'sources'=> array('type' =>'string', 'default' => 'Source:'),
                 'the_geom'  => array('type'=> 'geom'),
                 'collection_id' => array('type' =>'number', 'default' => 0),
                 'created_by' => array('type' =>'number'),
-                'dataset_id' => array('type' =>'number'),
-                'dataset_extra_fields' => array('type' =>'string'),
+                'id' => array('type' =>'number'),
+                'attributes' => array('type' =>'string'),
                 'description'   =>array('type' =>'string'),
                 'google_drive_id' => array('type' =>'string'),
                 'label'     => array('type' =>'string'),
@@ -99,21 +92,16 @@ class CartoDB
                 'privacy'   => array('type' =>'number', 'default' => 1),
                 'slug'      => array('type' =>'string'),
                 'status'    => array('type' =>'string', 'default' => 'public'),
-                'version'   => array('type' =>'number', 'default' => 1),
                 'primary_category_id'   => array('type' =>'number'),
                 'secondary_category_id' => array('type' =>'number'),
                 'tertiary_category_id'  => array('type' =>'number'),
-                /*'file_format'   => array('type' =>'string'),
-                'file_hash'     => array('type' =>'string'),
-                'file_mime'     => array('type' =>'string'),
-                'file_size'      => array('type' =>'string'),*/
                 'file_uri'      => array('type' =>'string', 'label' => 'URI du fichier'),
                 'updated_at'=> array('type' =>'string')
             ),
             'form'=>array(
                 'name'   => array('type' =>'text', 'label' => 'Nom/Name', 'value'=>''),
                 'desc'   => array('type' =>'text', 'label' => 'Description', 'value'=>''),
-                'attributions'=> array('type' =>'text', 'label' => 'Source/Attributions', 'value'=>''),
+                'attributions'=> array('type' =>'text', 'label' => 'Sources', 'value'=>''),
                 'licence'   => array('type' =>'select', 'default' => 'ODbL', 'value'=>0),
                 'primary_category_id'   => array('type' =>'select', 'label' => 'Catégorie Primaire', 'value'=>0),
                 'secondary_category_id' => array('type' =>'select', 'label' => 'Catégorie Secondaire', 'value'=>0),
@@ -122,11 +110,11 @@ class CartoDB
                 'field_category'  => array('type' =>'select', 'label' => 'Catégories', 'value'=>'')
             ),
             'output_tmpl'=>array(
-                'id'        => 'dataset_id',
+                'id'        => 'id',
                 'collection' => 'collection_id',
                 'name'      => 'name',
                 'desc'   => 'description',
-                'attributions'   => 'attributions',
+                'attributions'   => 'sources',
                 'licence'   => 'licence',
                 'categories'  => array(
                     'primary_category'   => 'primary_category_id',
@@ -134,9 +122,8 @@ class CartoDB
                     'tertiary_category_id' => 'tertiary_category_id'
                 ),
                 'count' => 'count',
-                'dataset_extra_fields' => 'dataset_extra_fields',
+                'attributes' => 'attributes',
                 'updated_at' => 'updated_at'
-
             ),
             'output_exp'=>array(
                 'primary_category_id' => array(
@@ -151,9 +138,9 @@ class CartoDB
                     'func' => 'Category',
                     'dependency' => 'tertiary_category_id'
                 ),
-                'dataset_extra_fields' => array(
+                'attributes' => array(
                     'func' => 'Json2array',
-                    'dependency' => 'dataset_extra_fields'
+                    'dependency' => 'attributes'
                 ),
                 'count' => array(
                     'func' => 'Count',
