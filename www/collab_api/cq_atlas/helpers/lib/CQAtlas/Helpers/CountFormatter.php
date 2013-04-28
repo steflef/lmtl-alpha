@@ -4,14 +4,26 @@ namespace CQAtlas\Helpers;
 
 class CountFormatter extends AbstractFormatter
 {
+    /**
+     * @var array
+     */
     protected $_row;
-    public function __construct($source,$CartoDB)
+
+    /**
+     * @param $source
+     * @param $CartoDB
+     * @param string $row
+     */
+    public function __construct($source,$CartoDB,$row)
     {
         parent::__construct($source,$CartoDB);
+        $this->_row = $row;
         return $this->getOutput();
     }
 
     public function getOutput(){
-        return $this->CartoDB->getPlacesCount($this->_source['id']);
+        //return $this->_row;
+
+        return $this->CartoDB->getPlacesCount($this->_row['id']);
     }
 }

@@ -53,18 +53,18 @@ class CartoDB
                 'updated_at' => 'updated_at'
             ),
             'output_exp'=>array(
-                'dataset_id' => array(
-                    'func' => 'Dataset',
-                    'dependency' => 'dataset_id'
-                ),
-                'primary_category_id' => array(
-                    'func' => 'Category',
-                    'dependency' => 'primary_category_id'
-                ),
-                'secondary_category_id' => array(
-                    'func' => 'Category',
-                    'dependency' => 'secondary_category_id'
-                ),
+//                'dataset_id' => array(
+//                    'func' => 'Dataset',
+//                    'dependency' => 'dataset_id'
+//                ),
+//                'primary_category_id' => array(
+//                    'func' => 'Category',
+//                    'dependency' => 'primary_category_id'
+//                ),
+//                'secondary_category_id' => array(
+//                    'func' => 'Category',
+//                    'dependency' => 'secondary_category_id'
+//                ),
                 'tags' => array(
                     'func' => 'Json2array',
                     'dependency' => 'tags'
@@ -125,21 +125,31 @@ class CartoDB
                 'updated_at' => 'updated_at'
             ),
             'output_exp'=>array(
-                'primary_category_id' => array(
-                    'func' => 'Category',
-                    'dependency' => 'primary_category_id'
-                ),
-                'secondary_category_id' => array(
-                    'func' => 'Category',
-                    'dependency' => 'secondary_category_id'
-                ),
-                'tertiary_category_id' => array(
-                    'func' => 'Category',
-                    'dependency' => 'tertiary_category_id'
-                ),
+//                'primary_category_id' => array(
+//                    'func' => 'Category',
+//                    'dependency' => 'primary_category_id'
+//                ),
+//                'secondary_category_id' => array(
+//                    'func' => 'Category',
+//                    'dependency' => 'secondary_category_id'
+//                ),
+//                'tertiary_category_id' => array(
+//                    'func' => 'Category',
+//                    'dependency' => 'tertiary_category_id'
+//                ),
                 'attributes' => array(
                     'func' => 'Json2array',
                     'dependency' => 'attributes'
+                ),
+                'count' => array(
+                    'func' => 'Count',
+                    'dependency' => 'none'
+                )
+            ),
+            'virtual_fields'=>array(
+                'the_geom' => array(
+                    'func' => 'Bbox',
+                    'dependency' => 'none'
                 ),
                 'count' => array(
                     'func' => 'Count',
@@ -185,15 +195,11 @@ class CartoDB
         return $this->_schema[$table];
     }
 
-    public function batchInsert($table,$data)
+/*    public function batchInsert($table,$data)
     {
         require_once 'vendor/cqatlas/cqatlas/CqUtil.php';
         #Get Database Fields
-/*        if(! array_key_exists($table,$this->_schema) ){
-            throw new \Exception("$table not found in Schema.");
-        }
 
-        $schema = $this->_schema[$table];*/
         $schema = $this->getSchema($table);
 
         # Build Queries
@@ -225,9 +231,16 @@ class CartoDB
 
         $curlResult = \CqUtil::curlPost($url, json_encode($postFields));
         return $curlResult;
-    }
+    }*/
 
-    public function selectAll($tableName='',$where='')
+    /**
+     * @param string $tableName
+     * @param string $where
+     * @param string $type
+     * @return array
+     * @throws \Exception
+     */
+    public function selectAll($tableName='',$query='',$type='')
     {
         #Get Database Fields
         if(! array_key_exists($tableName,$this->_schema) ){
@@ -236,27 +249,27 @@ class CartoDB
 
         # Build Queries
         $fields = $this->getFields($tableName);
-        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName $where ;";
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName $query ;";
 
-/*        echo "\n\r $sqlStatement <br> \n\r";
-        exit;*/
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
         $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
 
-
-        if($response->getStatusCode()!==200){
+        if($response->getStatusCode()!==200)
             throw new \Exception('CartoDb::selectAll status '.$response->getStatusCode());
-        }
 
-        $Formatter = new \CQAtlas\Helpers\ApiJsonFormatter($response->json(), $this->getSchema($tableName), $this);
-        return $Formatter->getOutput();
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+        return $Formatter->setType($type)->getOutput();
     }
 
+    /**
+     * @param int $datasetId
+     * @return mixed
+     * @throws \Exception
+     */
     public function getPlacesCount($datasetId=0)
     {
+        $sqlStatement = "SELECT COUNT(id) AS total FROM places WHERE dataset_id = $datasetId;";
 
-        # Build Queries
-        $sqlStatement = "SELECT COUNT(*) AS total FROM places WHERE dataset_id = $datasetId;";
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
         $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
 
@@ -268,111 +281,31 @@ class CartoDB
         return $results['rows'][0]['total'];
     }
 
-    protected function getBBox(Array $data){
-
-        $minLat = $data[0]['latitude'];
-        $minLon = $data[0]['longitude'];
-        $maxLat = $data[0]['latitude'];
-        $maxLon = $data[0]['longitude'];
-
-        foreach ($data as $value) {
-            $minLat = ( $minLat > $value['latitude'])?$value['latitude']:$minLat;
-            $maxLat = ( $maxLat < $value['latitude'])?$value['latitude']:$maxLat;
-
-            $minLon = ( $minLon > $value['longitude'])?$value['longitude']:$minLon;
-            $maxLon = ( $maxLon < $value['longitude'])?$value['longitude']:$maxLon;
-        }
-
-        $sql= "ST_GeomFromText('POLYGON(($minLon $maxLat,$minLon $maxLat,$minLon $minLat,$maxLon $minLat,$minLon $maxLat))')";
-
-        return array(
-            'minLon' => $minLon,
-            'maxLat' => $maxLat,
-            'maxLon' => $maxLon,
-            'minLat' => $minLat,
-            'sql' => $sql
-        );
-    }
-
-    public function addDataset(\stdClass $metas,Array $datas)
+    /**
+     * @param int $datasetId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getExtent($datasetId=0)
     {
-        # Build Querie
-        $datasetsfields = $this->getFields('datasets');
-        $placesfields = $this->getFields('places');
-
-        $fixDatas = array();
-        foreach ($datas as $key=>$value) {
-            $fixDatas[$key] = $value;
-            //$fixDatas[$key]['longitude'] = $value['lon'];
-            //$fixDatas[$key]['latitude'] = $value['lat'];
-        }
-        $datas = $fixDatas;
-
-        $dataset_extra_fields = array();
-        foreach ($datas[0] as $key=>$data) {
-            //echo "$key > $data <br>";
-            if( !in_array($key,$placesfields) && substr($key,0,1) !== '_'){
-                $dataset_extra_fields[] = $key;
-            }
-        }
-
-        $metas->dataset_extra_fields = json_encode($dataset_extra_fields);
-
-        $newDataset = array();
-        foreach ($datasetsfields as $field) {
-            if( array_key_exists($field,$metas) ){
-                $newDataset[$field] = $metas->$field;
-            }
-        }
-
-        // Format geom field
-       // $bbox = $this->getBBox($datas);
-       // $newDataset['the_geom'] = $bbox;
-
- /*       echo '<pre><code>';
-        print_r($metas);
-        echo "VS REAL";
-        print_r($datasetsfields);
-
-        print_r($dataset_extra_fields);
-        print_r($newDataset);
-        print_r($datasetsfields);
-        print_r($placesfields);
-        echo '</code></pre>';
-        exit;*/
-
-        //$Formatter = new \CQAtlas\Helpers\SqlDbFormatter($response->json(), $this->getSchema($tableName), $this);
-        $fields = array();
-        $values = array();
-        foreach ($metas as $k=>$v) {
-            $fields[] = $k;
-            $values[] = $v;
-        }
-
-        echo '<pre><code>';
-        print_r($fields);
-        print_r($values);
-        echo '</code></pre>';
-exit;
-
-        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName $where ;";
-        echo "<br>$sqlStatement";
+        $sqlStatement = "SELECT ST_AsGeoJson(ST_Extent(the_geom)) AS bbox FROM places WHERE dataset_id = $datasetId;";
 
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
-        //$response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
-        $response = $client->post('',null, array(
-            'q' => $sqlStatement,
-            'api_key' => $this->_di['cartodb_api_key']
-        ))->send();
+        $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+
         if($response->getStatusCode()!==200){
-            throw new \Exception('CartoDb::addDataset status '.$response->getStatusCode());
+            throw new \Exception('CartoDb::getPlacesCount status '.$response->getStatusCode());
         }
 
-        //$Formatter = new \CQAtlas\Helpers\ApiJsonFormatter($response->json(), $this->getSchema($tableName), $this);
-        //return $Formatter->getOutput();
-        return true;
+        $results =  $response->json();
+        return json_decode( $results['rows'][0]['bbox'], true);
     }
 
+    /**
+     * @param \stdClass $properties
+     * @return mixed
+     * @throws \Exception
+     */
     public function createDataset(\stdClass $properties)
     {
         $fields = array();
@@ -399,6 +332,10 @@ exit;
         return $response['rows'][0]['max'];
     }
 
+    /**
+     * @param array $places
+     * @return array
+     */
     public function addPlaces(Array $places)
     {
         $statements = array();
@@ -426,6 +363,10 @@ exit;
         return array( 'cartodb' => $response, 'count' => $placeCount);
     }
 
+    /**
+     * @param $tableName
+     * @return array
+     */
     private function getFields($tableName){
         $fields = array();
         foreach ($this->_schema[$tableName]['fields'] as $fieldName=>$fieldMeta) {
@@ -435,6 +376,11 @@ exit;
         return $fields;
     }
 
+    /**
+     * @param $placeId
+     * @return array
+     * @throws \Exception
+     */
     public function getPlace($placeId)
     {
         $tableName = 'places';
@@ -449,10 +395,16 @@ exit;
         if($response->getStatusCode()!==200){
             throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
         }
-        $Formatter = new \CQAtlas\Helpers\ApiJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
         return $Formatter->getOutput();
     }
 
+    /**
+     * @param $datasetId
+     * @return array
+     * @throws \Exception
+     */
     public function getPlaces($datasetId)
     {
         $tableName = 'places';
@@ -462,10 +414,12 @@ exit;
             'id',
             'name',
             'description',
-            'latitude',
-            'longitude',
-            'primary_category_id'
+            //'latitude',
+            //'longitude',
+            'primary_category_id',
+            'ST_AsGeoJSON(the_geom) AS the_geom'
         );
+
         $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE dataset_id = $datasetId;";
 
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
@@ -475,7 +429,7 @@ exit;
             throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
         }
 
-        $Formatter = new \CQAtlas\Helpers\ApiJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
         return $Formatter->getOutput();
     }
 

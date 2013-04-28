@@ -5686,6 +5686,15 @@ h6 {
   margin-bottom: 20px;
   min-height: 40px;
   padding: 6px;
+  height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.datasets_ui .datasets_panel .datasets_list .c-desc {
+  border-top: 2px solid #fff;
+  padding: 10px 0;
+  margin: 8px 0;
+  border-bottom: 2px solid #fff;
 }
 .easeIn {
   -webkit-transform: rotateY(0deg);

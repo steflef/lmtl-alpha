@@ -102,8 +102,10 @@ $apiAuthenticate = function () use ($app, $di){
 // #### Cache *Route middleware* for API Calls
 $apiCache = function () use ($app, $di){
     return function () use ($app, $di) {
-        $Cache = new \CQAtlas\Helpers\Cache($app, $di);
-        $Cache->call();
+        if($di['cache']){
+            $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+            $Cache->call();
+        }
     };
 };
 
@@ -145,9 +147,10 @@ $app->get("/tb",  function () use ($app, $di) {
 // #### *JSON* - *STATIC CACHE*
 $app->get("/datasets", $apiCache($app, $di), function () use ($app, $di) {
 
-    $from = 'datasets';
-    $query = 'ORDER BY updated_at DESC';
-    processRequest( $app, $di, $from, $query );
+    $params = new stdClass;
+    $params->from = 'datasets';
+    $params->query = 'ORDER BY updated_at DESC';
+    processRequest( $app, $di, $params );
 });
 // ***
 
@@ -206,10 +209,17 @@ $app->get("/datasets/:id/places", $apiCache($app, $di), function ($datasetId) us
 // ### API -  */datasets/:id/places*
 // ### Add a Place to a dataset (PUT)[**A**]
 // ### *JSON*
-$app->put("/datasets/:datasetId/places", function ($datasetId) use ($app, $di) {
+$app->post("/datasets/:datasetId/places", function ($datasetId) use ($app, $di) {
 
     #1 validate fields
     $reqBody = json_decode( $app->request()->getBody(), true );
+
+    echo '<pre><code>';
+    print_r($reqBody);
+    echo '</code></pre>';
+    $app->stop();
+
+
     $fields = array();
     $values = array();
     foreach ($reqBody as $field=>$value) {
@@ -233,18 +243,15 @@ $app->put("/datasets/:datasetId/places", function ($datasetId) use ($app, $di) {
         $app->stop();
     }
 
-    $Response = new \CQAtlas\Helpers\Response($app->response());
-
-    $data = json_decode( $httpResponse['response'], true);
-    $output = array_merge($Response->toArray(),$data);
-    echo json_encode($output);
+    $Response = new \CQAtlas\Helpers\Response($app->response(),200, $Response->toArray());
+    //$jsonOutput = json_encode($Response->toArray());
+    $Response->show();
 });
 // ***
 
 // ### API -  */places/:id*
 // ### Get a Place  (GET)
 // #### *JSON* - *STATIC CACHE*
-//$app->get("/places/:id", $apiCache($app, $di), function ($placeId) use ($app, $di) {
 $app->get("/places/:id", $apiCache($app, $di), function ($placeId) use ($app, $di) {
 
     $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
@@ -259,7 +266,8 @@ $app->get("/places/:id", $apiCache($app, $di), function ($placeId) use ($app, $d
     }
 
     $Response = new \CQAtlas\Helpers\Response($app->response());
-    $Response->addContent(array('timestamp'=>time(),'results'=>$placeDetails[0]));
+    $Response->addContent(array('timestamp'=>time(),'results'=>$placeDetails));
+
     $jsonOutput = json_encode($Response->toArray());
 
     // #### Cache the Response
@@ -302,58 +310,36 @@ $app->get("/places/:id/near", $apiCache($app, $di), function ($placeId) use ($ap
 });
 // ***
 
-// ### API -  */places/:id/near*
-// ### Get Places Near a Place (GET)
-// #### *Print JSON* - *STATIC CACHE*
-$app->get("/test/:id", $apiCache($app, $di), function ($datasetId) use ($app, $di) {
-
-    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
-
-    try{
-        $placesCount = $CartoDB->getPlacesCount($datasetId);
-
-    }catch (\Exception $e){
-        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
-        //$Response->addContent(array('trace' => $e->getTrace()[0]));
-        $Response->show();
-        $app->stop();
-    }
-    echo $placesCount;
-/*    $Response = new \CQAtlas\Helpers\Response($app->response());
-    $output = array_merge($Response->toArray(),array('timestamp'=>time(),'results'=>$placesNearby));
-    $jsonOutput = json_encode($output);
-
-    // #### Cache the Response
-    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
-    $Cache->save($jsonOutput);
-
-    echo $jsonOutput;*/
-});
-// ***
-
 // ### API -  */categories*
 // ### Categories List (GET)
 // #### *JSON* - *STATIC CACHE*
 $app->get("/categories", $apiCache($app, $di), function () use ($app, $di) {
 
-    $from = 'categories';
-    processRequest( $app, $di, $from );
+    $params = new stdClass;
+    $params->from = 'categories';
+    $params->type = 'list';
+
+    processRequest( $app, $di, $params );
 });
 // ***
 
 // ### API -  ProcessRequest
 // ### Process Simple API Request
 // #### *Print JSON* - *Store in STATIC CACHE*
-function processRequest(\Slim\Slim $app, \Pimple $di, $from='', $where=''){
+function processRequest(\Slim\Slim $app, \Pimple $di, stdClass $params){
 
     $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
 
+    $from = (isset($params->from))? $params->from : '';
+    $query = (isset($params->query))? $params->query : '';
+    $type = (isset($params->type))? $params->type : '';
+
     try{
-        $Results = $CartoDB->selectAll($from,$where);
+        $Results = $CartoDB->selectAll($from,$query,$type);
 
     }catch (\Exception $e){
         $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
-        //$Response->addContent(array('trace' => $e->getTrace()[0]));
+        # $Response->addContent(array('trace' => $e->getTrace()[0]));
         $Response->show();
         $app->stop();
     }
@@ -433,7 +419,6 @@ $app->post("/login", function () use ($app, $di) {
     $password = $app->request()->post('password');
 
     $errors = array();
-    #echo '<br>'. $email. '<br>';
     $userInfos = Lmtl::getUser($di['db'],$email);
 
     if (count($userInfos) == 0) {
@@ -445,7 +430,6 @@ $app->post("/login", function () use ($app, $di) {
 
     if (count($errors) > 0) {
         $app->flash('errors', $errors);
-
         $app->redirect('login');
     }
 
@@ -459,6 +443,37 @@ $app->post("/login", function () use ($app, $di) {
     }
 
     $app->redirect('./');
+});
+// ***
+
+// ### /auth
+// ### Auth Endpoint (POST)
+// Validate identity.
+// Then, show login interface or redirect to destination
+$app->post("/auth", function () use ($app, $di) {
+    $email = $app->request()->post('email');
+    $password = $app->request()->post('password');
+
+    $errors = array();
+    $userInfos = Lmtl::getUser($di['db'],$email);
+
+    if (count($userInfos) == 0) {
+        $errors[] = "Courriel introuvable";
+    } else if ( sha1($password.$userInfos[0]['salt']) != $userInfos[0]['password']) {
+        $errors[] = "Le mot de passe ne correspond pas";
+    }
+
+    if (count($errors) > 0) {
+        $Response = new \CQAtlas\Helpers\Response($app->response(),403,$errors[0]);
+        $Response->show();
+        $app->stop();
+    }
+
+    $_SESSION['user'] = $email;
+    $_SESSION['userId'] = $userInfos[0]['id'];
+
+    $Response = new \CQAtlas\Helpers\Response($app->response(),200,"OK");
+    $Response->show();
 });
 // ***
 

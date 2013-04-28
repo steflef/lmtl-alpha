@@ -29,7 +29,7 @@ function MapCtrl($rootScope, $scope, $compile, $filter, $http) {
     $scope.$on('setMarkers', function ($scope, oData) {
         var Places = oData.Places;
         var zoomToBounds = oData.zoomToBounds || false;
-        console.log(zoomToBounds);
+        //console.log(zoomToBounds);
         //console.log(Places);
         if (self.map.hasLayer(self.markers)) {
             self.map.removeLayer(self.markers);
@@ -47,9 +47,13 @@ function MapCtrl($rootScope, $scope, $compile, $filter, $http) {
         self.markers = new L.MarkerClusterGroup({showCoverageOnHover:false});
 
         _.each(Places, function(element){
-            var title = element.label;
+//            var title = element.label;
+//            var id = element.id;
+//            var latlng = new L.LatLng(element.location.latitude, element.location.longitude);
+            //console.log(element);
+            var title = '[#'+element.id+'] '+element.properties.name;
             var id = element.id;
-            var latlng = new L.LatLng(element.location.latitude, element.location.longitude);
+            var latlng = new L.LatLng(element.geometry.coordinates[1], element.geometry.coordinates[0]);
 
             var marker = new L.Marker(latlng, { title:title, latlng:latlng, id:id });
             //marker.bindPopup(title);
@@ -96,7 +100,6 @@ function MapCtrl($rootScope, $scope, $compile, $filter, $http) {
                     self.map.fitBounds(bounds);
                 }
             }
-
         }
 
         root.$broadcast("marked");
@@ -104,8 +107,8 @@ function MapCtrl($rootScope, $scope, $compile, $filter, $http) {
 
     $scope.$on('setMapCenter', function ($scope, Point) {
         var location = new L.LatLng(Point.lat, Point.lon);
-
-        self.map.setView(location, 18);
+        //console.log(Point.lat);
+        self.map.setView(location, 17);
     });
 
     $scope.$on('getMapCenter', function ($scope, Point) {
