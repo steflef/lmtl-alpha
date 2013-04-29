@@ -46,7 +46,7 @@ angular.module('appMain', ['ngSanitize'])
         console.log("++ TEST DIRECTIVE !!!!!!!! ++");
         var linker = function(scope, element, attrs) {
             attrs.$set('ng-click', "showDetails()");
-            element.append($compile('<a href="#" class="pseudo-btn" ng-click="showDetails(\''+attrs.rel+'\')" onclick="return false;"><span class="label">Afficher la fiche détaillée</span></a>')(scope));
+            element.append($compile('<a href="#" class="pseudo-btn" ng-click="ui.showDetails(\''+attrs.rel+'\')" onclick="return false;"><span class="label">Afficher la fiche détaillée</span></a>')(scope));
         };
         return{
             restrict:'E',
@@ -80,7 +80,7 @@ angular.module('appMain', ['ngSanitize'])
                         tmpl    += '     </div>';
                         tmpl    += '     <div class="right-space">';
                         tmpl    += '     <section>';
-                        tmpl    += '         <a href="#" class="pseudo-btn pull-right" ng-click="getPlace('+item.id+')" onclick="return false;">';
+                        tmpl    += '         <a href="#" class="pseudo-btn pull-right" ng-click="place.getPlace('+item.id+')" onclick="return false;">';
                         tmpl    += '             <span class="badge" style="padding-left: 4px;">';
                         tmpl    += '                 <i class="icon-info-sign icon-white" style="margin-top:1px;"></i>';
                         tmpl    += '             </span>';
@@ -90,8 +90,6 @@ angular.module('appMain', ['ngSanitize'])
                         tmpl    += '         <div class="desc">Desc.: '+item.properties.description+'</div>';
                         tmpl    += '         <div class="bar">';
                         tmpl    += '             <span class="label-soft" ng-repeat="category in selectedCategorie">{{category.fr}}</span>';
-                        //tmpl    += '             <span class="label-soft">'+ (scope.cat.options[item.properties.primary_category_id].fr) +'</span>';
-
                         tmpl    += '         </div>';
                         tmpl    += '     </section>';
                         tmpl    += '     </div>';
@@ -217,11 +215,11 @@ angular.module('appMain', ['ngSanitize'])
             var updateList = function(){
                 console.log("++++ TEST CHOSEN");
                 //if(scope.cat.hash.lenght !== 0 ){
-                  if(scope.cat[attrs.ngModel].lenght !== 0 ){
-                    var codesList = _.pluck(scope.cat.options, 'id');
+                  if(scope.categories[attrs.ngModel].lenght !== 0 ){
+                    var codesList = _.pluck(scope.categories.options, 'id');
                     var indexes = [];
                     //_.each(scope.cat.hash, function (code) {
-                    _.each(scope.cat[attrs.ngModel], function (code) {
+                    _.each(scope.categories[attrs.ngModel], function (code) {
                         indexes.push(_.indexOf(codesList, code));
                     });
 
@@ -232,20 +230,20 @@ angular.module('appMain', ['ngSanitize'])
             }
 
             //scope.$watch('cat.options', test);
-            scope.$watch('cat', updateList, true);
+            scope.$watch('categories', updateList, true);
             //scope.$watch('cat', test, true);
 
             _scope = scope;
             $(element).chosen().change( function(event, item){
                 scope.$apply(function(){
                     //var hash = _scope.cat.hash;
-                    var hash = _scope.cat[attrs.ngModel];
+                    var hash = _scope.categories[attrs.ngModel];
 
                     if( item.selected !== undefined ){
-                        hash.push(_scope.cat.options[item.selected].id);
+                        hash.push(_scope.categories.options[item.selected].id);
                     }
                     if( item.deselected !== undefined ){
-                        var id= _scope.cat.options[item.deselected].id;
+                        var id= _scope.categories.options[item.deselected].id;
                         hash.splice(_.indexOf(hash,id),1);
                     }
                 })
@@ -288,7 +286,7 @@ angular.module('appMain', ['ngSanitize'])
 
         var self = $scope;
 
-        $scope.isMobile = {
+        self.isMobile = {
             Android: function() {
                 return navigator.userAgent.match(/Android/i);
             },
@@ -308,8 +306,63 @@ angular.module('appMain', ['ngSanitize'])
                 return (self.isMobile.Android() || self.isMobile.BlackBerry() || self.isMobile.iOS() || self.isMobile.Opera() || self.isMobile.Windows());
             }
         };
-        $scope.datasets = [];
-        $scope.places = {
+        self.datasets = {
+            features:[],
+            selectedDataset:{},
+            getFeatures: function(){
+                return this.features;
+            },
+            select:function(id){
+                this.selectedDataset = _.find(this.getFeatures(), function(item){ return item.id == id; });
+                return this.getSelected();
+            },
+            getSelected: function(){
+              return this.selectedDataset;
+            },
+            findById: function(id){
+                return _.find(this.getFeatures(), function(item){ return id == item.id; });
+            },
+            init:function(data){
+                this.features = data;
+            },
+            get: function(){
+
+                self.$broadcast("hideMsg");
+                self.$broadcast("showMsg",{title:"Chargement",text:"Jeux de données"});
+
+                $http.get("./datasets").
+                    success(function(data, status) {
+
+                        if(data.status == 200){
+                            $scope.$broadcast('newDatasets', data);
+                        }
+                    }).
+                    error(function(data, status) {
+                        console.error(status);
+                        console.log(data);
+                        self.$broadcast("hideMsg");
+                        self.$broadcast("showMsg",{title:"Base de données inaccessible.",text:"Nouvelle tentative dans 5 secondes. Status: "+status} );
+                    });
+            },
+            listeners: function(){
+                var __self = this;
+                return {
+                    newDatasets: function(scope, oData){
+
+                        __self.init(oData.results.geoJson.features);
+
+                        if(__self.getFeatures().length < 1){
+                            console.error('No Dataset!');
+                            self.$broadcast("showMsg",{title:"Attention",text:"Aucun jeu de données disponible"});
+                        }else{
+                            self.$broadcast("hideMsg");
+                            self.categories.get();
+                        }
+                    }
+                }
+            }
+        };
+        self.places = {
             features:[],
             getFeatures:function(){
                 return this.features;
@@ -324,8 +377,27 @@ angular.module('appMain', ['ngSanitize'])
                 this.features.push(newPoint);
                 return newPoint;
             },
-            newDataset:function(dataset){
-                this.features = dataset;
+            init:function(data){
+                this.features = data;
+            },
+            getPlaces: function(datasetId){
+
+                self.datasets.select(datasetId);
+                self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Chargement des lieux en cours"});
+                console.log("Get Places!! Dataset("+datasetId+")");
+
+                $http.get("./datasets/"+datasetId +"/places").
+                    success(function(data) {
+
+                        if(data.status == 200){
+                            self.$broadcast('newPlaces', data);
+                        }
+                    }).
+                    error(function(data, status) {
+                        console.error(status);
+                        console.log(data);
+                        self.$broadcast("showMsg",{title:"Attention",text:"Status: "+status});
+                    });
             },
             tmpl:function(){
                 return {
@@ -341,27 +413,320 @@ angular.module('appMain', ['ngSanitize'])
                         primary_category_id:0
                     }
                 }
+            },
+            listeners: function(){
+                var __self = this;
+                return {
+                    newPlaces: function($scope, oData){
+
+                        self.ui.hideDatasets();
+                        __self.init(oData.results.geoJson.features);
+                        $rootScope.$broadcast("setMarkers", {Places:__self.getFeatures(),zoomToBounds:true});
+                        self.$broadcast("hideMsg");
+                    }
+                }
             }
         };
+        self.place = {
+            features:[],
+            featuresCache:{},
+            feature:{},
+            newFeature:{},
+            getFeature:function(){
+                return this.feature;
+            },
+            getCoordinates:function(){
+                return this.getFeature().geometry.coordinates;
+            },
+            init:function(data){
+                this.feature = data;
+            },
+            setLocation: function () {
+                __self = this;
+                self.$broadcast("showMsg",{title:"Calcul en cours",text:"Position du lieu"});
+                setTimeout(function(){
+                    $rootScope.$broadcast("getMapCenter", {id:__self.getFeature().id},'newLocation');
+                },100);
+            },
+            tmpl:function(){
+                return {
+                    id:"temp",
+                    geometry:{
+                        coordinates:[-73.59246,45.528293]
+                    },
+                    properties:{
+                        name:'',
+                        description:'',
+                        primary_category_id:0,
+                        secondary_category_id:0,
+                        address: '',
+                        city:'',
+                        postal_code:'',
+                        service: '',
+                        website:'',
+                        tel_number:'',
+                        attributes:[]
+                    }
+                }
+            },
+            getPlace: function(placeId){
 
-        $scope.place = {};
-        $scope.insertPlace = {};
-        $scope.cat = {
+                this.feature = {};
+                   var __self = this;
+                if(this.featuresCache['_'+placeId]){
+                    console.info("FROM CACHE");
+                    self.$broadcast('newPlace', this.featuresCache['_'+placeId] );
+                    self.ui.showDetails();
+                }else{
+                    self.ui.showDetails();
+                    $http.get("./places/"+placeId ).
+                        success(function(data) {
+                            if(data.status == 200){
+                                __self.featuresCache['_'+placeId] = data;
+                                var data = data;
+                                setTimeout(
+                                    function(){
+                                        console.log('TRIGGER');
+                                        self.$broadcast('newPlace', data);
+
+                                    }
+                                    ,600);
+                            }
+                        }).
+                        error(function(data, status) {
+                            console.eror(status);
+                            console.log(data);
+                            self.$broadcast("hideMsg");
+                            self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Le serveur distant n'est pas disponible en ce moment."},true);
+                            self.ui.showList();
+                        });
+                }
+            },
+            post: function(){
+                console.log("POST New Places");
+                var self = $scope;
+
+                $http.post("./datasets/"+self.datasets.getSelected().id+"/places",this.feature).
+                    success(function(data) {
+                        console.log(status);
+                        console.log(data);
+                        if(data.status == 200){
+
+                            //self.$broadcast('newPlace', data);
+                        }
+                    }).
+                    error(function(data, status) {
+                        console.error(status);
+                        console.log(data);
+                    });
+            },
+            listeners: function(){
+                var __self = this;
+                return {
+                    newPlace: function ($scope, oData) {
+
+                        __self.init( oData.results.geoJson.features[0] );
+
+                        //Categories
+                        self.categories.editHash = [
+                            __self.feature.properties.primary_category_id,
+                            __self.feature.properties.secondary_category_id
+                        ];
+                        self.safeApply();
+                    },
+                    addLocation: function(){
+
+                        console.log("Add LOCATION !");
+                        console.log(this);
+                        console.log(__self);
+
+                        var newFeature = __self.tmpl();
+
+                        console.log(newFeature);
+
+                        self.categories.newHash = [];
+                        self.ui.states.editStep = 1;
+                        self.ui.states.mode = "edit";
+                        self.ui.states.locationPanel = "show-form";
+
+                        var attributes = self.datasets.getSelected().properties.attributes;
+                        _.each(attributes, function(item){
+                            var att = item;
+                            att.data='';
+                            newFeature.properties.attributes.push(att);
+
+                        });
+
+                        __self.feature = newFeature;
+
+                        placesFeature = self.places.addFeature(__self.feature);
+                        console.log("++ placesFeature");
+                        console.log(placesFeature);
+                        __self.feature.id = placesFeature.id;
+                        //self.selectedCategorie = [];
+                        console.log("++ __self.feature");
+                        console.log(__self.feature);
+                        console.log(self    );
+                        self.safeApply();
+                    },
+                    newLocation: function (event, Point) {
+                        console.log('-- New Location');
+
+                        __self.getFeature().geometry.coordinates[1] = Point.LatLng.lat;
+                        __self.getFeature().geometry.coordinates[0] = Point.LatLng.lng;
+
+                        var tempPlace = _.find(self.places.getFeatures(), function(item){ return item.id == Point.id; });
+                        tempPlace.geometry.coordinates = __self.getCoordinates();
+                        $rootScope.$broadcast("setMarkers", {Places:self.places.getFeatures()});
+
+                        self.setMapCenter();
+                        self.ui.states.editStep = 2;
+
+                        if(typeof(google) != "undefined"){
+                            self.reverseGeocoding();
+                        }else{
+                            self.$broadcast("hideMsg");
+                            self.safeApply();
+                        }
+                    }
+                }
+            }
+        };
+        self.categories = {
             obj:{},
             options:[],
             hash:[],
             editHash:[],
-            newHash:[]
+            newHash:[],
+            get: function(){
+                var __self = this;
+                self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Chargement des catégories en cours"});
+                $http.get("./categories").
+                    success(function(data) {
+                        __self.obj = data.results;
+                        __self.options = _.values(__self.obj);
+                        self.$broadcast("hideMsg");
+                    }).
+                    error(function(data, status) {
+                        console.error(status);
+                        console.log(data);
+                    });
+            }
         };
-        $scope.newCats = [];
-        $scope.selectedCats = [];
+        self.ui ={
+            states:{
+                datasetsPanel: "",
+                placePanel: "",
+                locationPanel: "",
+                slider: "",
+                mode: "read",
+                editMode: false,
+                editStep: 1,
+                overlay: null,
+                overlayMsg: null
+            },
+            showDatasets: function(){
+                this.states.datasetsPanel = "easeIn";
+            },
+            hideDatasets: function(){
+                this.states.datasetsPanel = "easeOut";
+            },
+            toggleMode: function(){
+                this.states.mode = (this.states.mode == "edit")?"read":"edit";
+                this.states.editMode = (this.states.mode == "edit")?true:false;
+            },
+            showMsg: function(msg){
 
-        $scope.selectedDataset = "";
-        $scope.datasets_panel = "easeIn";
-        $scope.place_panel = "";
-        $scope.slider = "";
+                if(this.states.overlayMsg){
+                    return false;
+                }
 
-        $scope.modal = {
+                var target = document.createElement("div");
+                target.id = "overlay";
+
+                var uiOverlay = document.createElement("div");
+                uiOverlay.className = "ui-overlay";
+
+                var msgBox = document.createElement("div");
+                msgBox.className = "ui-msgbox";
+
+                var msgTitle = document.createElement("div");
+                msgTitle.className = "title lead";
+                var newContent = document.createTextNode(msg.title);
+
+                var p = document.createElement("p");
+                var pContent = document.createTextNode(msg.text);
+                p.appendChild(pContent);
+
+                msgTitle.appendChild(newContent);
+                msgTitle.appendChild(p);
+
+                msgBox.appendChild(msgTitle);
+
+                target.appendChild(msgBox);
+                target.appendChild(uiOverlay);
+                document.body.appendChild(target);
+
+                this.states.overlayMsg = target;
+            },
+            hideMsg: function(){
+                if(!this.states.overlayMsg){
+                    return false;
+                }
+                var handle = this.states.overlayMsg;
+                handle.parentNode.removeChild(handle);
+                this.states.overlayMsg = null;
+                return true;
+            },
+            showList: function(){
+                this.states.slider = "";
+            },
+            showDetails: function(){
+                this.states.slider = "details";
+            },
+            toStepTwo: function () {
+                console.log("+++ toStepTwo +++");
+                this.states.editStep = 2;
+            },
+            showForm: function () {
+                if(this.states.locationPanel == "show-form"){
+                    self.place.listeners().addLocation();
+                }else{
+                    this.states.locationPanel = "show-form";
+                    setTimeout(self.place.listeners().addLocation,500);
+                }
+            },
+            hideForm: function () {
+                this.states.locationPanel = "hide-form";
+            },
+
+            listeners: function(){
+                var __self = this;
+                return {
+                    showMsg: function(){
+                        var msg = arguments[1] || {title:"",text:""};
+                        var flash = arguments[2] || false;
+                        __self.showMsg(msg);
+
+                        if(flash){
+                            setTimeout(function(){
+                                    __self.hideMsg();
+                                },3000
+                            );
+                        }
+                    },
+                    hideMsg: function(){
+                        __self.hideMsg();
+                    }
+                }
+            }
+        };
+
+        //$scope.datasets_panel = "easeIn";
+
+        //$scope.slider = "";
+
+        self.modal = {
             display: false,
             header: {
                 title: "Modal Title"
@@ -393,158 +758,18 @@ angular.module('appMain', ['ngSanitize'])
             }
         };
         $scope.inverseGeocode = {};
-        $scope.mode = "read";
-        $scope.locationPanel = "hide-form";
-        $scope.editMode = false;
+        //$scope.mode = "read";
+        //$scope.locationPanel = "hide-form";
+        //$scope.editMode = false;
 
-        $scope.placeDetailsCache = {};
 
         $scope.init = function(){
-            console.log('INIT');
-            //$scope.$broadcast("load","Connexion");
+            console.info('++ INIT ++');
             $scope.$broadcast("showMsg",{title:"Initialisation",text:"Connexion au serveur"});
-            //$scope.$broadcast("showMsg",{title:"Chargement",text:"test ..."});
-            //console.log( self.isMobile.any());
-            $scope.getDatasets();
-        };
-
-        $scope.showDatasets = function(){
-            $scope.datasets_panel = "easeIn";
-        }
-
-        $scope.hideDatasets = function(){
-            $scope.datasets_panel = "easeOut";
-        }
-
-        $scope.showLoader = function(text){
-            if($scope.overlay){
-                return false;
-            }
-
-            var opts = {
-                lines: 13, // The number of lines to draw
-                length: 11, // The length of each line
-                width: 5, // The line thickness
-                radius: 17, // The radius of the inner circle
-                corners: 1, // Corner roundness (0..1)
-                rotate: 0, // The rotation offset
-                color: '#FFF', // #rgb or #rrggbb
-                speed: 1, // Rounds per second
-                trail: 60, // Afterglow percentage
-                shadow: false, // Whether to render a shadow
-                hwaccel: false, // Whether to use hardware acceleration
-                className: 'spinner', // The CSS class to assign to the spinner
-                zIndex: 2e9, // The z-index (defaults to 2000000000)
-                top: 'auto', // Top position relative to parent in px
-                left: 'auto' // Left position relative to parent in px
-            };
-
-            var target = document.createElement("div");
-            target.id = "overlay";
-            target.style.cssText = 'background-color:#fff;position:fixed;top:0;bottom:0;width:100%;z-index:2;opacity:.5;';
-            document.body.appendChild(target);
-            var spinner = new Spinner(opts).spin(target);
-            $scope.backdrop = target;
-            $scope.overlay = iosOverlay({
-                text: text,
-                duration: null,
-                spinner: spinner
-            });
-            return false;
-        };
-
-        $scope.hideLoader = function(){
-            if(!$scope.overlay){
-                return false;
-            }
-            $scope.overlay.hide();
-            $scope.overlay = null;
-
-            var handle = $scope.backdrop;
-            handle.parentNode.removeChild(handle);
-            return true;
-        };
-
-        $scope.showMsg = function(msg){
-            //console.log("showMsg");
-            if($scope.overlayMsg){
-                return false;
-            }
-
-            var target = document.createElement("div");
-            target.id = "overlay";
-
-            var uiOverlay = document.createElement("div");
-            uiOverlay.className = "ui-overlay";
-
-            var msgBox = document.createElement("div");
-            msgBox.className = "ui-msgbox";
-
-            var msgTitle = document.createElement("div");
-            msgTitle.className = "title lead";
-            var newContent = document.createTextNode(msg.title);
-
-            var p = document.createElement("p");
-            var pContent = document.createTextNode(msg.text);
-            p.appendChild(pContent);
-
-            msgTitle.appendChild(newContent);
-            msgTitle.appendChild(p);
-
-            msgBox.appendChild(msgTitle);
-
-            target.appendChild(msgBox);
-            target.appendChild(uiOverlay);
-            document.body.appendChild(target);
-
-            $scope.overlayMsg = target;
-        };
-
-        $scope.hideMsg = function(){
-            //console.log("HIDE!");
-            if(!$scope.overlayMsg){
-                return false;
-            }
-            //$scope.overlayMsg.hide();
-            var handle = $scope.overlayMsg;
-            handle.parentNode.removeChild(handle);
-            $scope.overlayMsg = null;
-            return true;
+            self.datasets.get();
         };
 
         // LISTENERS
-        $scope.$on('load', function () {
-            var text = arguments[1] || "";
-            self.showLoader(text);
-        });
-
-        $scope.$on('loadEnd', function () {
-            self.hideLoader();
-        });
-
-        $scope.$on('showMsg', function () {
-            var msg = arguments[1] || {title:"",text:""};
-            var flash = arguments[2] || false;
-
-            self.showMsg(msg);
-
-            if(flash){
-                setTimeout(function(){
-                        self.hideMsg();
-                    },3000
-                );
-            }
-        });
-
-        $scope.$on('hideMsg', function () {
-
-            self.hideMsg();
-        });
-
-        $scope.$on('route', function () {
-
-            console.log("NEW ROUTE EVENT");
-        });
 
         $scope.$on(
             "$routeChangeSuccess",
@@ -553,8 +778,6 @@ angular.module('appMain', ['ngSanitize'])
                 console.log("ON $routeChangeSuccess");
                 console.log($currentRoute);
                 console.log($previousRoute);
-
-
                 console.log($route);
                 console.log($location);
                 if($route.current){
@@ -566,8 +789,8 @@ angular.module('appMain', ['ngSanitize'])
         );
 
         $scope.$on('newMapCenter', function ($scope, Point) {
-            self.place.geometry.coordinates[1]= Point.LatLng.lat;
-            self.place.geometry.coordinates[0] = Point.LatLng.lng;
+            self.place.getCoordinates()[1]= Point.LatLng.lat;
+            self.place.getCoordinates()[0] = Point.LatLng.lng;
 
             var tempPlace = _.find(self.places, function(item){ return item.id == Point.id; });
             console.log(tempPlace);
@@ -581,197 +804,22 @@ angular.module('appMain', ['ngSanitize'])
             if(typeof (google) != 'undefined'){
                 self.reverseGeocoding();
             }
-
         });
 
-        $scope.$on('newDatasets', function ($scope, oData) {
+        $scope.$on('newDatasets', self.datasets.listeners().newDatasets);
+        $scope.$on('newPlaces', self.places.listeners().newPlaces);
+        $scope.$on('newPlace', self.place.listeners().newPlace);
+        $scope.$on('showMsg', self.ui.listeners().showMsg);
+        $scope.$on('hideMsg', self.ui.listeners().hideMsg);
 
-            console.log('EVENT newDatasets');
-            //console.log(oData);
-            self.datasets = oData.results.geoJson.features;
-            console.log(self.datasets);
-            if(self.datasets.length < 1){
-                console.log('No Dataset!');
-                self.$broadcast("showMsg",{title:"Attention",text:"Aucun jeu de données disponible"});
-            }else{
-                //self.$broadcast("loadEnd");
-                self.$broadcast("hideMsg");
-                self.getCategories();
-                //self.getPlaces( oData.results[0].id );
-            }
-        });
-
-        $scope.$on('newPlaces', function ($scope, oData) {
-
-            console.log('EVENT newPlaces');
-            console.log(oData.results.geoJson.features);
-
-            self.hideDatasets();
-            self.places.newDataset(oData.results.geoJson.features);
-            $rootScope.$broadcast("setMarkers", {Places:self.places.getFeatures(),zoomToBounds:true});
-            self.$broadcast("hideMsg");
-        });
-
-        $scope.$on('marked', function () {
-            //console.log('MARKED');
-        });
-
-        $scope.$on('newPlace', function ($scope, oData) {
-            console.log('EVENT newPlace');
-            console.log(oData.results.geoJson.features[0]);
-            self.place = oData.results.geoJson.features[0];
-
-            //Categories
-            self.cat.editHash = [self.place.properties.primary_category_id,self.place.properties.secondary_category_id];
-
-            self.safeApply();
-        });
+        $scope.$on('newLocation', self.place.listeners().newLocation);
 
         $scope.$on('markerShowDetails', function ($scope, oData) {
-            self.getPlace(oData.id);
+            self.place.getPlace(oData.id);
         });
 
-        // HTTP GET DATASET
-        $scope.getDatasets = function(){
-
-            var self = $scope;
-            self.$broadcast("hideMsg");
-            self.$broadcast("showMsg",{title:"Chargement",text:"Jeux de données"});
-
-            $http.get("./datasets").
-                success(function(data, status) {
-
-                    if(data.status == 200){
-                        $scope.$broadcast('newDatasets', data);
-                    }
-                }).
-                error(function(data, status) {
-                    console.log(status);
-                    console.log(data);
-                    //$scope.data = data || "Request failed";
-                    //self.status = status;
-                    //self.$broadcast("loadEnd");
-                    self.$broadcast("hideMsg");
-                    self.$broadcast("showMsg",{title:"Base de données inaccessible.",text:"Nouvelle tentative dans 5 secondes. Status: "+status} );
-                });
-        };
-
-        // HTTP GET PLACES
-        $scope.getPlaces = function(datasetId){
-
-            var self = $scope;
-            self.selectedDataset = datasetId;
-            self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Chargement des lieux en cours"});
-            console.log("Get Places!! Dataset("+datasetId+")");
-
-            $http.get("./datasets/"+datasetId +"/places").
-                success(function(data) {
-
-                    if(data.status == 200){
-                        self.$broadcast('newPlaces', data);
-                    }
-                }).
-                error(function(data, status) {
-                    console.log(status);
-                    console.log(data);
-                    //$scope.data = data || "Request failed";
-                    $scope.status = status;
-
-                    self.$broadcast("showMsg",{title:"Attention",text:"Status: "+status});
-                });
-        };
-
-        // Toggle Mode
-        $scope.toggleMode = function(){
-            self.mode = (self.mode == "edit")?"read":"edit";
-            self.editMode = (self.mode == "edit")?true:false;
-        };
-
-        // HTTP GET SINGLE PLACE
-        $scope.getPlace = function(placeId){
-            console.log("Get Places #"+placeId);
-            var self = $scope;
-
-            self.place = [];
-
-            if(self.placeDetailsCache['_'+placeId]){
-                console.log("FROM CACHE");
-                self.$broadcast('newPlace', self.placeDetailsCache['_'+placeId] );
-                self.showDetails();
-            }else{
-                self.showDetails();
-                $http.get("./places/"+placeId ).
-                    success(function(data) {
-                        //console.log(status);
-                        //console.log(data);
-                        if(data.status == 200){
-                            self.placeDetailsCache['_'+placeId] = data;
-                            var data = data;
-                            setTimeout(
-                                function(){
-                                    console.log('TRIGGER');
-                                    self.$broadcast('newPlace', data);
-
-                                }
-                                ,600);
-                            //self.$broadcast('newPlace', data);
-                        }
-                    }).
-                    error(function(data, status) {
-                        //console.log(status);
-                        //console.log(data);
-                        self.$broadcast("hideMsg");
-                        self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Le serveur distant n'est pas disponible en ce moment."},true);
-                        self.showList();
-                    });
-            }
-        };
-
-        $scope.postPlace = function(){
-            console.log("POST New Places");
-            var self = $scope;
-
-            $http.post("./datasets/"+self.selectedDataset+"/places",self.place).
-                success(function(data) {
-                    console.log(status);
-                    console.log(data);
-                    if(data.status == 200){
-                        //self.placeDetailsCache['_'+placeId] = data;
-
-//                        setTimeout(
-//                            function(){
-//                                console.log('TRIGGER');
-//                                self.$broadcast('newPlace', data);
-//
-//                            }
-//                            ,600);
-                        //self.$broadcast('newPlace', data);
-                    }
-                }).
-                error(function(data, status) {
-                    console.log(status);
-                    console.log(data);
-                });
-        };
-
-        $scope.getCategories = function(){
-            console.log("Get Categories");
-            var self = $scope;
-            self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Chargement des catégories en cours"});
-            $http.get("./categories").
-                success(function(data) {
-                    $scope.cat.obj = data.results;
-                    $scope.cat.options = _.values($scope.cat.obj);
-                    self.$broadcast("hideMsg");
-                }).
-                error(function(data, status) {
-                    console.log(status);
-                    console.log(data);
-                });
-        }
-
         $scope.setMapCenter = function(){
-            $rootScope.$broadcast("setMapCenter", {lon:self.place.geometry.coordinates[0],lat:self.place.geometry.coordinates[1]});
+            $rootScope.$broadcast("setMapCenter", {lon:self.place.getCoordinates()[0],lat:self.place.getCoordinates()[1]});
         }
 
         $scope.getMapCenter = function(){
@@ -781,26 +829,19 @@ angular.module('appMain', ['ngSanitize'])
             },100);
         }
 
-        $scope.setLocation = function () {
-            self.$broadcast("showMsg",{title:"Calcul en cours",text:"Position du lieu"});
-            setTimeout(function(){
-                $rootScope.$broadcast("getMapCenter", {id:self.place.id},'newLocation');
-            },100);
-        };
-
-        $scope.$on('newLocation', function (event, Point) {
+/*        $scope.$on('newLocation', function (event, Point) {
             console.log('New Location');
 
-            self.place.geometry.coordinates[1] = Point.LatLng.lat;
-            self.place.geometry.coordinates[0] = Point.LatLng.lng;
+            self.place.getFeature().geometry.coordinates[1] = Point.LatLng.lat;
+            self.place.getFeature().geometry.coordinates[0] = Point.LatLng.lng;
 
             var tempPlace = _.find(self.places.getFeatures(), function(item){ return item.id == Point.id; });
             console.log(tempPlace);
-            tempPlace.geometry = self.place.geometry;
+            tempPlace.geometry = self.place.getFeature().geometry;
             $rootScope.$broadcast("setMarkers", {Places:self.places.getFeatures()});
 
             self.setMapCenter();
-            self.editStep = 2;
+            self.ui.states.editStep = 2;
 
             if(typeof(google) != "undefined"){
                 self.reverseGeocoding();
@@ -808,7 +849,7 @@ angular.module('appMain', ['ngSanitize'])
                 self.$broadcast("hideMsg");
                 self.safeApply();
             }
-        });
+        });*/
 
         $scope.reverseGeocoding = function(){
             // reverse geocode with Google
@@ -817,7 +858,7 @@ angular.module('appMain', ['ngSanitize'])
                 self.geocoder = new google.maps.Geocoder();
             }
 
-            var location = new google.maps.LatLng(self.place.geometry.coordinates[1], self.place.geometry.coordinates[0]);
+            var location = new google.maps.LatLng(self.place.getCoordinates()[1], self.place.getCoordinates()[0]);
             self.geocoder.geocode( {'latLng': location}, function(results, status) {
 
                 if (status == google.maps.GeocoderStatus.OK) {
@@ -828,7 +869,7 @@ angular.module('appMain', ['ngSanitize'])
                     self.modal.setTitle('Géocodage');
                     var cHead = 'Géocodage Inverse disponible';
                     self.modal.setContent({head:cHead,content:[formatted_address]});
-                    self.modal.target = self.montest;
+                    //self.modal.target = self.montest;
                     var btn = {
                         target: self.processInverseGeododing,
                         display: true,
@@ -836,6 +877,9 @@ angular.module('appMain', ['ngSanitize'])
                     };
                     self.modal.btn = btn;
                     self.modal.show();
+
+                    console.log(self.modal);
+                    console.log(self);
                     self.$broadcast("hideMsg");
                     self.safeApply();
 
@@ -849,89 +893,12 @@ angular.module('appMain', ['ngSanitize'])
             $rootScope.$broadcast("geoLocation");
         }
 
-        $scope.showList = function(){
-            //self.place_panel = "";
-            self.slider = "";
-        }
-
-        $scope.showDetails = function(){
-            //self.place_panel = "flipped";
-            //console.log("SHOWDETAILS");
-            $scope.slider = "details";
-            //self.safeApply();
-        }
-
-        $scope.addLocation = function(){
-            console.log("Add LOCATION !");
-            self.editStep = 1;
-            var place = {
-                id:"temp",
-                geometry:{
-                    coordinates:[-73.59246,45.528293]
-                },
-                properties:{
-                    name:'',
-                    description:'',
-                    primary_category_id:0,
-                    secondary_category_id:0,
-                    address: '',
-                    city:'',
-                    postal_code:'',
-                    service: '',
-                    website:'',
-                    tel_number:'',
-                    attributes:{data:[]}
-                }
-            };
-
-            self.cat.newHash = [];
-            self.mode = "edit";
-            self.locationPanel = "show-form";
-
-            // Tags
-            var dataset = _.find(self.datasets, function(item){ return self.selectedDataset == item.id; });
-
-            _.each(dataset.properties.attributes, function(item){
-                    var att = item;
-                    att.data='';
-                    place.properties.attributes.data.push(att);
-
-            });
-
-            self.place = place;
-
-            feature = self.places.addFeature(place);
-            console.log("__FEATURE");
-            console.log(feature);
-            place.id = feature.id;
-            //self.selectedCategorie = [];
-            console.log(place);
-            self.safeApply();
-        }
-
-        $scope.toStepTwo = function () {
-            self.editStep = 2;
-        };
-
-        $scope.showForm = function () {
-            if(self.locationPanel == "show-form"){
-                self.addLocation();
-            }else{
-                self.locationPanel = "show-form";
-                setTimeout(self.addLocation,500);
-            }
-        };
-
-        $scope.hideForm = function () {
-            self.locationPanel = "hide-form";
-        };
-
         $scope.getScope = function(){
             console.log($scope);
         }
 
-        $scope.processInverseGeododing = function () {
-            //console.log("YES!!!!!!");
+/*        $scope.processInverseGeododing = function () {
+            console.log("PROCESS YES!!!!!!");
 
             var invGeo = self.inverseGeocode;
             var location_type = invGeo.geometry.location_type;
@@ -943,11 +910,11 @@ angular.module('appMain', ['ngSanitize'])
             _.each(address_components, function(item){
                 //console.log(item.types[0] + " >> " + item.long_name);
                 if( item.types[0] === "postal_code"){
-                    self.place.properties.postal_code = item.long_name;
+                    self.place.feature.properties.postal_code = item.long_name;
                 }
 
                 if( item.types[0] === "locality"){
-                    self.place.properties.city = item.long_name;
+                    self.place.feature.properties.city = item.long_name;
                 }
 
                 if( item.types[0] === "street_number"){
@@ -959,9 +926,44 @@ angular.module('appMain', ['ngSanitize'])
                 }
             });
 
-            self.place.properties.address = street_number + " " + route;
-            self.place.properties.service = "Google";
-            self.place.properties.location_type = location_type;
+            self.place.feature.properties.address = street_number + " " + route;
+            self.place.feature.properties.service = "Google";
+            self.place.feature.properties.location_type = location_type;
+            self.modal.hide();
+            self.safeApply();
+        };*/
+        $scope.processInverseGeododing = function () {
+            console.log("YES!!!!!!");
+
+            var invGeo = self.inverseGeocode;
+            var location_type = invGeo.geometry.location_type;
+            var address_components = invGeo.address_components;
+
+            var street_number = "";
+            var route = "";
+
+            _.each(address_components, function(item){
+                //console.log(item.types[0] + " >> " + item.long_name);
+                if( item.types[0] === "postal_code"){
+                    self.place.feature.properties.postal_code = item.long_name;
+                }
+
+                if( item.types[0] === "locality"){
+                    self.place.feature.properties.city = item.long_name;
+                }
+
+                if( item.types[0] === "street_number"){
+                    street_number = item.long_name;
+                }
+
+                if( item.types[0] === "route"){
+                    route = item.long_name;
+                }
+            });
+
+            self.place.feature.properties.address = street_number + " " + route;
+            self.place.feature.properties.service = "Google";
+            self.place.feature.properties.location_type = location_type;
             self.modal.hide();
             self.safeApply();
         };

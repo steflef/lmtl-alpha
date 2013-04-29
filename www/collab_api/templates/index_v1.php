@@ -24,9 +24,9 @@
     </div>
 
     <!-- Datasets Panel -->
-    <div ng-class="datasets_panel" class="datasets_ui">
+    <div ng-class="ui.states.datasetsPanel" class="datasets_ui">
         <div class="datasets_panel">
-            <div class="datasets_list" ng-show="(datasets.length > 0)">
+            <div class="datasets_list" ng-show="(datasets.getFeatures().length > 0)">
                 <div class="row">
                     <div class="span9">
                         <p class="lead" style="margin-left: 4px;">Jeux de données</p>
@@ -35,7 +35,7 @@
                 <div class="row">
                     <div class="span5"
                          style="border: none;"
-                         ng-repeat="dataset in datasets | filter:query | orderBy:updated_at:reverseCheck"
+                         ng-repeat="dataset in datasets.getFeatures() | filter:query | orderBy:updated_at:reverseCheck"
                          ng-animate="{enter: 'placeIn'}">
 
                         <div class="{{dataset.id}} fbm watcher-well test-{{dataset.id|number}}">
@@ -43,7 +43,7 @@
                                 <dd>
                                     <a href="#"
                                        onclick="return false;"
-                                       ng-click="getPlaces(dataset.id)"
+                                       ng-click="places.getPlaces(dataset.id)"
                                        class="bold"
                                        style="font-size: 15px;">{{dataset.properties.name}} ({{dataset.id|number}})</a>
                                 </dd>
@@ -60,9 +60,9 @@
 
                                 </dd>
                                 <dd>Catégories<br>
-                                    <span style="margin-right: 8px;" class="label" ng-show="(dataset.properties.primary_category_id != 0)">{{cat.obj[dataset.properties.primary_category_id].fr}}</span>
-                                    <span style="margin-right: 8px;" class="label" ng-show="(dataset.properties.secondary_category_id != 0)">{{cat.obj[dataset.properties.secondary_category_id].fr}}</span>
-                                    <span style="margin-right: 8px;" class="label" ng-show="(dataset.properties.tertiary_category_id != 0)">{{cat.obj[dataset.properties.tertiary_category_id].fr}}</span>
+                                    <span style="margin-right: 8px;" class="label" ng-show="(dataset.properties.primary_category_id != 0)">{{categories.obj[dataset.properties.primary_category_id].fr}}</span>
+                                    <span style="margin-right: 8px;" class="label" ng-show="(dataset.properties.secondary_category_id != 0)">{{categories.obj[dataset.properties.secondary_category_id].fr}}</span>
+                                    <span style="margin-right: 8px;" class="label" ng-show="(dataset.properties.tertiary_category_id != 0)">{{categories.obj[dataset.properties.tertiary_category_id].fr}}</span>
                                 </dd>
                             </dl>
                         </div>
@@ -78,19 +78,20 @@
         <div class="location-toolbar">
             <ul>
                 <li style="float: right;">{{datasets[0].name}}</li>
-                <li><a href="#" onclick="return false;" ng-click="showDatasets()"><i class="icon-th-large icon-white"></i> Menu</a></li>
-                <li><a href="#" onclick="return false;" ng-click="showForm()"><i class="icon-plus icon-white"></i> Ajouter un lieu</a></li>
+                <li><a href="#" onclick="return false;" ng-click="ui.showDatasets()"><i class="icon-th-large icon-white"></i> Menu</a></li>
+                <li><a href="#" onclick="return false;" ng-click="ui.showForm()"><i class="icon-plus icon-white"></i> Ajouter un lieu</a></li>
                 <li ng-show="isMobile.any()"><a href="#" onclick="return false;" ng-click="geoLocation()"><i class="icon-map-marker icon-white"></i> Ma localisation</a></li>
-                <li><a href="#" onclick="return false;" ng-show="(mode=='read')" ng-click="toggleMode()"><span class="badge badge-inverse">Mode Lecture</span></a></li>
-                <li><a href="#" onclick="return false;" ng-show="(mode=='edit')" ng-click="toggleMode()"><span class="badge badge-info">Mode Edition</span></a></li>
+                <li><a href="#" onclick="return false;" ng-show="(ui.states.mode=='read')" ng-click="ui.toggleMode()"><span class="badge badge-inverse">Mode Lecture</span></a></li>
+                <li><a href="#" onclick="return false;" ng-show="(ui.states.mode=='edit')" ng-click="ui.toggleMode()"><span class="badge badge-info">Mode Edition</span></a></li>
+                <li><a href="#" onclick="return false;"  ng-click="getScope()"><span class="badge badge-info">SCOPE</span></a></li>
             </ul>
         </div>
 
         <div class="panels">
 
             <!-- Places List -->
-            <div class="places" ng-class="slider">
-                <div ng-show="(places.length == 0)" class="no-places">
+            <div class="places" ng-class="ui.states.slider">
+                <div ng-show="(places.features.length == 0)" class="no-places">
                     <p>Aucun lieu dans ce jeu de données. <br>À vous de jouer!</p>
                     <p>
                         <a href="#" onclick="return false;"  ng-click="addLocation()" style="padding-top: 20px;">Ajouter un lieu</a>
@@ -101,46 +102,35 @@
 
             <!-- Details READ/EDIT -->
             <div class="flip-container">
-                <div id="panel" ng-class="mode">
+                <div id="panel" ng-class="ui.states.mode">
 
                 <!-- READ Details -->
                 <div class="place-read face" >
                     <div class="hero-unit">
                         <div class="top-header">
                             MODE LECTURE
-                            <button class="close" onclick="return false;" ng-click="showList()">&times;</button>
+                            <button class="close" onclick="return false;" ng-click="ui.showList()">&times;</button>
                             <div class="flip-btn-edit">
-                                <a href="#" onclick="return false;" ng-click="toggleMode()">
+                                <a href="#" onclick="return false;" ng-click="ui.toggleMode()">
                                     <span class="badge"><i class="icon-retweet icon-white"></i> MODE ÉDITION</span>
                                 </a>
                             </div>
                         </div>
-                        <div ng-hide="(place.id)"
+                        <div ng-hide="(place.feature.id)"
                              ng-animate="{show: 'fadeIn', hide: 'fadeOut'}"
                              class="place-load">
                             CHARGEMENT EN COURS<img src="./public/img/place-loader.gif" alt="loader-img"/>
                         </div>
                         <div class="read-panel">
-                            <div ng-show="(place.id)" ng-animate="{show: 'placeIn'}" class="place-details-content">
-                                <h4>{{place.properties.name}}</h4>
-                                <p>{{place.properties.description}}</p>
+                            <div ng-show="(place.feature.id)" ng-animate="{show: 'placeIn'}" class="place-details-content">
+                                <h4>{{place.feature.properties.name}}</h4>
+                                <p>{{place.feature.properties.description}}</p>
                                 <ul>
                                     <li class="level2-list">
-                                        <small>iD<br>{{place.id}}</small>
+                                        <small>iD<br>{{place.feature.id}}</small>
                                     </li>
                                 </ul>
                                 <hr>
-<!--                                <div>
-                                    <p>Localisation
-                                        <button class="btn btn-mini btn-info pull-right" ng-click="setMapCenter()"><i
-                                                class="icon-map-marker icon-white"></i></button>
-                                    </p>
-                                    <ul>
-                                        <li class="level2-list" ng-repeat="(tag, val) in place.location">
-                                            <small>{{tag}}<br>{{val}}</small>
-                                        </li>
-                                    </ul>
-                                </div>-->
                                 <div>
                                     <p>Localisation
                                         <button class="btn btn-mini btn-info pull-right" ng-click="setMapCenter()"><i
@@ -148,19 +138,19 @@
                                     </p>
                                     <ul>
                                         <li class="level2-list">
-                                            <small>Adresse<br>{{place.properties.address}}</small>
+                                            <small>Adresse<br>{{place.feature.properties.address}}</small>
                                         </li>
                                         <li class="level2-list">
-                                            <small>Ville<br>{{place.properties.city}}</small>
+                                            <small>Ville<br>{{place.feature.properties.city}}</small>
                                         </li>
                                         <li class="level2-list">
-                                            <small>Latitude<br>{{place.geometry.coordinates[1]}}</small>
+                                            <small>Latitude<br>{{place.feature.geometry.coordinates[1]}}</small>
                                         </li>
                                         <li class="level2-list" >
-                                            <small>Longitude<br>{{place.geometry.coordinates[0]}}</small>
+                                            <small>Longitude<br>{{place.feature.geometry.coordinates[0]}}</small>
                                         </li>
                                         <li class="level2-list">
-                                            <small>Code postal<br>{{place.properties.postal_code}}</small>
+                                            <small>Code postal<br>{{place.feature.properties.postal_code}}</small>
                                         </li>
                                     </ul>
                                 </div>
@@ -170,12 +160,12 @@
                                     <ul>
                                         <li class="level2-list">
                                             <small>Téléphone<br>
-                                                {{place.properties.tel_number}}
+                                                {{place.feature.properties.tel_number}}
                                             </small>
                                         </li>
                                         <li class="level2-list">
                                             <small>Site Web<br>
-                                                {{place.properties.website}}
+                                                {{place.feature.properties.website}}
                                             </small>
                                         </li>
                                     </ul>
@@ -184,7 +174,7 @@
                                 <div>
                                     <p>Attributs</p>
                                     <ul>
-                                        <li class="level2-list" ng-show="(val.length > 1)" ng-repeat="(tag, val) in place.properties.tags track by $id($index)">
+                                        <li class="level2-list" ng-show="(val.length > 1)" ng-repeat="(tag, val) in place.feature.properties.tags track by $id($index)">
                                             <small>{{tag}}<br>{{val}} </small>
                                         </li>
                                     </ul>
@@ -192,8 +182,8 @@
                                 <hr>
                                 <div class="bar">
                                     <p>Catégories</p>
-                                    <span class="label">{{cat.obj[place.properties.primary_category_id].fr}}</span>
-                                    <span class="label">{{cat.obj[place.properties.secondary_category_id].fr}}</span>
+                                    <span class="label">{{categories.obj[place.feature.properties.primary_category_id].fr}}</span>
+                                    <span class="label">{{categories.obj[place.feature.properties.secondary_category_id].fr}}</span>
                                 </div>
                                 <br>
                                 <button class="btn btn-mini" ng-click="getScope()">SCOPE</button>
@@ -207,18 +197,18 @@
                     <div class="hero-unit">
                         <div class="top-header">
                             MODE EDITION
-                            <button class="close" onclick="return false;" ng-click="showList()">&times;</button>
+                            <button class="close" onclick="return false;" ng-click="ui.showList()">&times;</button>
                             <div class="flip-btn">
-                                <a href="#" onclick="return false;" ng-click="toggleMode()">
+                                <a href="#" onclick="return false;" ng-click="ui.toggleMode()">
                                     <span class="badge"><i class="icon-retweet icon-white"></i> MODE LECTURE</span>
                                 </a>
                             </div>
                         </div>
-                        <div ng-hide="(place.id)" ng-animate="{show: 'fadeIn', hide: 'fadeOut'}" class="place-load">
+                        <div ng-hide="(place.feature.id)" ng-animate="{show: 'fadeIn', hide: 'fadeOut'}" class="place-load">
                             CHARGEMENT EN COURS<img src="./public/img/place-loader.gif" alt="loader-img"/>
                         </div>
                         <div  class="edit-panel">
-                            <div ng-show="((place.id))" ng-animate="{show: 'placeIn'}" class="place-details-content ">
+                            <div ng-show="((place.feature.id))" ng-animate="{show: 'placeIn'}" class="place-details-content ">
 
                                 <div class="save-console">
                                     <div  class="save-console-container">
@@ -238,12 +228,12 @@
                                     <li class="level2-list">
                                         <small>Nom
                                             <br>
-                                            <input type="text" ng-model="place.properties.name"/>
+                                            <input type="text" ng-model="place.feature.properties.name"/>
                                         </small>
                                     </li>
                                     <li class="level2-list">
                                         <small>Description<br>
-                                            <textarea ng-model="place.properties.description" name="" id="" cols="30" rows="5"></textarea>
+                                            <textarea ng-model="place.feature.properties.description" name="" id="" cols="30" rows="5"></textarea>
                                         </small>
                                     </li>
                                 </ul>
@@ -260,29 +250,29 @@
                                     <ul>
                                         <li class="level2-list">
                                             <small>Adresse<br>
-                                                <input type="text" ng-model="place.properties.address" updateModelOnBlur/>
+                                                <input type="text" ng-model="place.feature.properties.address" updateModelOnBlur/>
                                             </small>
                                         </li>
                                         <li class="level2-list">
                                             <small>Ville<br>
-                                                <input type="text" ng-model="place.properties.city" updateModelOnBlur/>
+                                                <input type="text" ng-model="place.feature.properties.city" updateModelOnBlur/>
                                             </small>
                                         </li>
                                         <li class="level2-list">
                                             <small>Latitude<br>
-                                                <input type="text" disabled="disabled" ng-model="place.geometry.coordinates[0]"
+                                                <input type="text" disabled="disabled" ng-model="place.feature.geometry.coordinates[0]"
                                                        updateModelOnBlur/>
                                             </small>
                                         </li>
                                         <li class="level2-list">
                                             <small>Longitude<br>
-                                                <input type="text" disabled="disabled" ng-model="place.geometry.coordinates[1]"
+                                                <input type="text" disabled="disabled" ng-model="place.feature.geometry.coordinates[1]"
                                                        updateModelOnBlur/>
                                             </small>
                                         </li>
                                         <li class="level2-list">
                                             <small>Code postal<br>
-                                                <input type="text" ng-model="place.location.postal_code" updateModelOnBlur/>
+                                                <input type="text" ng-model="place.feature.location.postal_code" updateModelOnBlur/>
                                             </small>
                                         </li>
                                     </ul>
@@ -293,12 +283,12 @@
                                     <ul>
                                         <li class="level2-list">
                                             <small>Téléphone<br>
-                                                <input type="text" ng-model="place.properties.tel_number" updateModelOnBlur/>
+                                                <input type="text" ng-model="place.feature.properties.tel_number" updateModelOnBlur/>
                                             </small>
                                         </li>
                                         <li class="level2-list">
                                             <small>Site Web<br>
-                                                <input type="text" ng-model="place.properties.website" updateModelOnBlur/>
+                                                <input type="text" ng-model="place.feature.properties.website" updateModelOnBlur/>
                                             </small>
                                         </li>
                                     </ul>
@@ -307,10 +297,10 @@
                                 <div>
                                     <p>Attributs</p>
                                     <ul>
-                                        <li class="level2-list" ng-repeat="(tag, val) in place.properties.tags track by $id($index)">
+                                        <li class="level2-list" ng-repeat="(tag, val) in place.feature.properties.tags track by $id($index)">
                                             <small>{{tag}}
                                                 <br>
-                                                <input type="text" ng-model="place.properties.tags[tag]" updateModelOnBlur/>
+                                                <input type="text" ng-model="place.feature.properties.tags[tag]" updateModelOnBlur/>
                                             </small>
                                         </li>
                                     </ul>
@@ -325,7 +315,7 @@
                                             class="chzn-select"
                                             style="width:100%;"
                                             ng-model="editHash"
-                                            ng-options="d.fr group by d.group for d in cat.options"
+                                            ng-options="d.fr group by d.group for d in categories.options"
                                             chosen-rao>
                                     </select>
 
@@ -340,17 +330,17 @@
             </div>
 
             <!-- Add Location -->
-            <div class="place-new" ng-class="locationPanel">
+            <div class="place-new" ng-class="ui.states.locationPanel">
                 <div class="hero-unit">
                     <div class="top-header">
                         NOUVEAU LIEU
-                        <button class="close" onclick="return false;" ng-click="hideForm()">&times;</button>
-                        <div class="step-btn step-btn-one" style="width: 180px;" ng-show="(editStep != 2)">
-                            <a href="#" onclick="return false;" ng-click="toStepTwo()">
+                        <button class="close" onclick="return false;" ng-click="ui.hideForm()">&times;</button>
+                        <div class="step-btn step-btn-one" style="width: 180px;" ng-show="(ui.states.editStep != 2)">
+                            <a href="#" onclick="return false;" ng-click="ui.toStepTwo()">
                                 <span class="badge">LOCALISATION</span>
                             </a>
                         </div>
-                        <div class="step-btn step-btn-one" style="width: 180px;" ng-show="(editStep == 2)">
+                        <div class="step-btn step-btn-one" style="width: 180px;" ng-show="(ui.states.editStep == 2)">
                             <a href="#" onclick="return false;">
                                 <span class="badge">MÉTADONNÉES</span>
                             </a>
@@ -360,23 +350,23 @@
                         <div ng-animate="{show: 'placeIn'}" class="place-details-content">
                             <div class="metadata newLocation">
                                 <form name="form" novalidate>
-                                    <section ng-show="(editStep != 2)">
+                                    <section ng-show="(ui.states.editStep != 2)">
                                         <button class="btn btn-small btn-block btn-info"
-                                                ng-click="setLocation()"> <i class="icon-screenshot icon-white" style="margin-top: 1px;"></i> Positionner le lieu en fonction de la mire
+                                                ng-click="place.setLocation()"> <i class="icon-screenshot icon-white" style="margin-top: 1px;"></i> Positionner le lieu en fonction de la mire
                                         </button>
                                     </section>
-                                    <section ng-show="(editStep == 2)" ng-animate="{show: 'placeIn'}">
+                                    <section ng-show="(ui.states.editStep == 2)" ng-animate="{show: 'placeIn'}">
                                         <div>
                                             <p>Identification</p>
                                             <ul>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uName.$error.required"><strong>*</strong></span> Nom<br>
-                                                        <input type="text" name="uName" ng-model="place.properties.name" required />
+                                                        <input type="text" name="uName" ng-model="place.feature.properties.name" required />
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uDesc.$error.required"><strong>*</strong></span> Description<br>
-                                                        <textarea ng-model="place.properties.description" name="uDesc" id="" cols="30" rows="4" required ></textarea>
+                                                        <textarea ng-model="place.feature.properties.description" name="uDesc" id="" cols="30" rows="4" required ></textarea>
                                                     </small>
                                                 </li>
                                             </ul>
@@ -394,29 +384,29 @@
                                             <ul>
                                                 <li class="level2-list">
                                                     <small>Adresse<br>
-                                                        <input type="text" ng-model="place.properties.address" />
+                                                        <input type="text" ng-model="place.feature.properties.address" />
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small>Ville<br>
-                                                        <input type="text" ng-model="place.properties.city" />
+                                                        <input type="text" ng-model="place.feature.properties.city" />
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uLat.$error.required"><strong>*</strong></span> Latitude<br>
-                                                        <input type="text" name="uLat" ng-model="place.geometry.coordinates[0]" required updateModelOnBlur/>
+                                                        <input type="text" name="uLat" ng-model="place.feature.geometry.coordinates[0]" required updateModelOnBlur/>
 
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uLon.$error.required"><strong>*</strong></span> Longitude<br>
-                                                        <input type="text" name="uLon" ng-model="place.geometry.coordinates[0]" required updateModelOnBlur/>
+                                                        <input type="text" name="uLon" ng-model="place.feature.geometry.coordinates[0]" required updateModelOnBlur/>
 
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small>Code postal<br>
-                                                        <input type="text" ng-model="place.properties.postal_code" />
+                                                        <input type="text" ng-model="place.feature.properties.postal_code" />
                                                     </small>
                                                 </li>
                                             </ul>
@@ -428,12 +418,12 @@
                                                 <ul>
                                                     <li class="level2-list">
                                                         <small>Téléphone<br>
-                                                            <input type="text" ng-model="place.properties.tel_number"/>
+                                                            <input type="text" ng-model="place.feature.properties.tel_number"/>
                                                         </small>
                                                     </li>
                                                     <li class="level2-list">
                                                         <small>Site Web<br>
-                                                            <input type="text" ng-model="place.properties.website"/>
+                                                            <input type="text" ng-model="place.feature.properties.website"/>
                                                         </small>
                                                     </li>
                                                 </ul>
@@ -453,7 +443,7 @@
                                                         class="chzn-select"
                                                         style="width:100%;"
                                                             ng-model="newHash"
-                                                        ng-options="d.fr group by d.group for d in cat.options"
+                                                        ng-options="d.fr group by d.group for d in categories.options"
                                                         chosen-rao>
                                                 </select>
 
@@ -463,7 +453,7 @@
                                             <div>
                                                 <p>Attributs</p>
                                                 <ul>
-                                                    <li class="level2-list" ng-repeat="tag in place.properties.attributes.data track by $id($index)">
+                                                    <li class="level2-list" ng-repeat="tag in place.feature.properties.attributes track by $id($index)">
                                                         <small>{{tag.field}}
                                                             <br>
                                                             <input type="text" ng-model="tag.data" />
@@ -489,7 +479,7 @@
             <div>
                 <div map id="mapPort"></div>
             </div>
-            <div ng-show="((mode=='edit'))" class="crosshair"></div>
+            <div ng-show="((ui.states.mode=='edit'))" class="crosshair"></div>
         </div>
     </section>
 
