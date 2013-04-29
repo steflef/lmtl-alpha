@@ -80,7 +80,7 @@ angular.module('appMain', ['ngSanitize'])
                         tmpl    += '     </div>';
                         tmpl    += '     <div class="right-space">';
                         tmpl    += '     <section>';
-                        tmpl    += '         <a href="#" class="pseudo-btn pull-right" ng-click="place.getPlace('+item.id+')" onclick="return false;">';
+                        tmpl    += '         <a href="#" class="pseudo-btn pull-right" ng-click="place.get('+item.id+')" onclick="return false;">';
                         tmpl    += '             <span class="badge" style="padding-left: 4px;">';
                         tmpl    += '                 <i class="icon-info-sign icon-white" style="margin-top:1px;"></i>';
                         tmpl    += '             </span>';
@@ -229,9 +229,7 @@ angular.module('appMain', ['ngSanitize'])
                 }
             }
 
-            //scope.$watch('cat.options', test);
             scope.$watch('categories', updateList, true);
-            //scope.$watch('cat', test, true);
 
             _scope = scope;
             $(element).chosen().change( function(event, item){
@@ -380,7 +378,7 @@ angular.module('appMain', ['ngSanitize'])
             init:function(data){
                 this.features = data;
             },
-            getPlaces: function(datasetId){
+            get: function(datasetId){
 
                 self.datasets.select(datasetId);
                 self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Chargement des lieux en cours"});
@@ -477,7 +475,13 @@ angular.module('appMain', ['ngSanitize'])
                     }
                 }
             },
-            getPlace: function(placeId){
+            cancel:function(){
+                //delete temp Places Point
+                // todo: createFunction
+
+                this.newFeature = {};
+            },
+            get: function(placeId){
 
                 this.feature = {};
                    var __self = this;
@@ -510,28 +514,38 @@ angular.module('appMain', ['ngSanitize'])
                         });
                 }
             },
-            cancel:function(){
-                //delete temp Places Point
-                // todo: createFunction
-
-                this.newFeature = {};
-            },
-            delete:function(){
-                //delete Places Point
-                // todo: createFunction
-
-                //this.newFeature = {};
+            crud: function(method){
+                console.log("CRUD");
+                var self = $scope;
             },
             put: function(){
-                console.log("POST New Places");
+                console.log("Edit New Places > PUT");
                 var self = $scope;
 
-                $http.put("./datasets/"+self.datasets.getSelected().id+"/places",this.getFeature()).
+                $http.put("./places",this.getFeature()).
                     success(function(data) {
                         console.log(status);
                         console.log(data);
                         if(data.status == 200){
+                            console.info('QUIET UPDATE');
+                            // todo: update Place with new infos
+                        }
+                    }).
+                    error(function(data, status) {
+                        console.error(status);
+                        console.log(data);
+                    });
+            },
+            post: function(){
+                console.log("CREATE New Places > POST");
+                var self = $scope;
 
+                $http.post("./places",this.getNewFeature()).
+                    success(function(data) {
+                        console.log(status);
+                        console.log(data);
+                        if(data.status == 200){
+                            console.info('QUIET CREATE');
                             //self.$broadcast('newPlace', data);
 
                             // todo: update Place with new infos
@@ -542,11 +556,15 @@ angular.module('appMain', ['ngSanitize'])
                         console.log(data);
                     });
             },
-            post: function(){
-                console.log("POST New Places");
+            delete:function(){
+                //delete Places Point
+                // todo: showConfirm
+
+
+                console.log("DELETE Places > DELETE");
                 var self = $scope;
 
-                $http.post("./datasets/"+self.datasets.getSelected().id+"/places",this.getNewFeature()).
+                $http.delete("./places/"+this.getFeature().id).
                     success(function(data) {
                         console.log(status);
                         console.log(data);
@@ -841,7 +859,7 @@ angular.module('appMain', ['ngSanitize'])
             }
         });
         $scope.$on('markerShowDetails', function ($scope, oData) {
-            self.place.getPlace(oData.id);
+            self.place.get(oData.id);
         });
 
         // GEO FUNC

@@ -43,7 +43,7 @@
                                 <dd>
                                     <a href="#"
                                        onclick="return false;"
-                                       ng-click="places.getPlaces(dataset.id)"
+                                       ng-click="places.get(dataset.id)"
                                        class="bold"
                                        style="font-size: 15px;">{{dataset.properties.name}} ({{dataset.id|number}})</a>
                                 </dd>
@@ -318,7 +318,7 @@
                                             ng-options="d.fr group by d.group for d in categories.options"
                                             chosen-rao>
                                     </select>
-
+                                    <button class="btn btn-mini" ng-click="place.put()">PUT</button>
                                     <button class="btn btn-mini" ng-click="getScope()">$SCOPE</button>
                                 </div>
                             </div>
@@ -461,7 +461,7 @@
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <button class="btn btn-mini" ng-click="postPlace()">POST</button>
+                                            <button class="btn btn-mini" ng-click="place.post()">POST</button>
 
 
                                         </div>
