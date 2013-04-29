@@ -361,12 +361,12 @@
                                             <ul>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uName.$error.required"><strong>*</strong></span> Nom<br>
-                                                        <input type="text" name="uName" ng-model="place.feature.properties.name" required />
+                                                        <input type="text" name="uName" ng-model="place.newFeature.properties.name" required />
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uDesc.$error.required"><strong>*</strong></span> Description<br>
-                                                        <textarea ng-model="place.feature.properties.description" name="uDesc" id="" cols="30" rows="4" required ></textarea>
+                                                        <textarea ng-model="place.newFeature.properties.description" name="uDesc" id="" cols="30" rows="4" required ></textarea>
                                                     </small>
                                                 </li>
                                             </ul>
@@ -376,37 +376,37 @@
                                             <p>Localisation
                                                 <button class="btn btn-mini btn-info pull-right hide" ng-click="setMapCenter()"><i
                                                         class="icon-map-marker icon-white"></i></button>
-                                                <br>
+       <!--                                         <br>
                                                 <button class="btn btn-mini btn-block btn-info"
                                                         ng-click="getMapCenter()"> <i class="icon-screenshot icon-white" style="margin-top: 1px;"></i> Positionner le lieu en fonction de la mire
-                                                </button>
+                                                </button>-->
                                             </p>
                                             <ul>
                                                 <li class="level2-list">
                                                     <small>Adresse<br>
-                                                        <input type="text" ng-model="place.feature.properties.address" />
+                                                        <input type="text" ng-model="place.newFeature.properties.address" />
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small>Ville<br>
-                                                        <input type="text" ng-model="place.feature.properties.city" />
+                                                        <input type="text" ng-model="place.newFeature.properties.city" />
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uLat.$error.required"><strong>*</strong></span> Latitude<br>
-                                                        <input type="text" name="uLat" ng-model="place.feature.geometry.coordinates[0]" required updateModelOnBlur/>
+                                                        <input type="text" name="uLat" ng-model="place.newFeature.geometry.coordinates[0]" required updateModelOnBlur/>
 
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small><span class="warning" ng-show="form.uLon.$error.required"><strong>*</strong></span> Longitude<br>
-                                                        <input type="text" name="uLon" ng-model="place.feature.geometry.coordinates[0]" required updateModelOnBlur/>
+                                                        <input type="text" name="uLon" ng-model="place.newFeature.geometry.coordinates[0]" required updateModelOnBlur/>
 
                                                     </small>
                                                 </li>
                                                 <li class="level2-list">
                                                     <small>Code postal<br>
-                                                        <input type="text" ng-model="place.feature.properties.postal_code" />
+                                                        <input type="text" ng-model="place.newFeature.properties.postal_code" />
                                                     </small>
                                                 </li>
                                             </ul>
@@ -418,12 +418,12 @@
                                                 <ul>
                                                     <li class="level2-list">
                                                         <small>Téléphone<br>
-                                                            <input type="text" ng-model="place.feature.properties.tel_number"/>
+                                                            <input type="text" ng-model="place.newFeature.properties.tel_number"/>
                                                         </small>
                                                     </li>
                                                     <li class="level2-list">
                                                         <small>Site Web<br>
-                                                            <input type="text" ng-model="place.feature.properties.website"/>
+                                                            <input type="text" ng-model="place.newFeature.properties.website"/>
                                                         </small>
                                                     </li>
                                                 </ul>
@@ -453,7 +453,7 @@
                                             <div>
                                                 <p>Attributs</p>
                                                 <ul>
-                                                    <li class="level2-list" ng-repeat="tag in place.feature.properties.attributes track by $id($index)">
+                                                    <li class="level2-list" ng-repeat="tag in place.newFeature.properties.attributes track by $id($index)">
                                                         <small>{{tag.field}}
                                                             <br>
                                                             <input type="text" ng-model="tag.data" />
@@ -479,7 +479,7 @@
             <div>
                 <div map id="mapPort"></div>
             </div>
-            <div ng-show="((ui.states.mode=='edit'))" class="crosshair"></div>
+            <div class="crosshair"></div>
         </div>
     </section>
 

@@ -435,17 +435,25 @@ angular.module('appMain', ['ngSanitize'])
             getFeature:function(){
                 return this.feature;
             },
+            getNewFeature:function(){
+                return this.newFeature;
+            },
             getCoordinates:function(){
                 return this.getFeature().geometry.coordinates;
+            },
+            getNewCoordinates:function(){
+                return this.getNewFeature().geometry.coordinates;
             },
             init:function(data){
                 this.feature = data;
             },
+            // new Point Location (press button) -- After point creation
             setLocation: function () {
                 __self = this;
                 self.$broadcast("showMsg",{title:"Calcul en cours",text:"Position du lieu"});
                 setTimeout(function(){
-                    $rootScope.$broadcast("getMapCenter", {id:__self.getFeature().id},'newLocation');
+                    //$rootScope.$broadcast("getMapCenter", {id:__self.getFeature().id},'newLocation');
+                    $rootScope.$broadcast("getMapCenter", {id:__self.getNewFeature().id},'newLocation');
                 },100);
             },
             tmpl:function(){
@@ -502,17 +510,51 @@ angular.module('appMain', ['ngSanitize'])
                         });
                 }
             },
-            post: function(){
+            cancel:function(){
+                //delete temp Places Point
+                // todo: createFunction
+
+                this.newFeature = {};
+            },
+            delete:function(){
+                //delete Places Point
+                // todo: createFunction
+
+                //this.newFeature = {};
+            },
+            put: function(){
                 console.log("POST New Places");
                 var self = $scope;
 
-                $http.post("./datasets/"+self.datasets.getSelected().id+"/places",this.feature).
+                $http.put("./datasets/"+self.datasets.getSelected().id+"/places",this.getFeature()).
                     success(function(data) {
                         console.log(status);
                         console.log(data);
                         if(data.status == 200){
 
                             //self.$broadcast('newPlace', data);
+
+                            // todo: update Place with new infos
+                        }
+                    }).
+                    error(function(data, status) {
+                        console.error(status);
+                        console.log(data);
+                    });
+            },
+            post: function(){
+                console.log("POST New Places");
+                var self = $scope;
+
+                $http.post("./datasets/"+self.datasets.getSelected().id+"/places",this.getNewFeature()).
+                    success(function(data) {
+                        console.log(status);
+                        console.log(data);
+                        if(data.status == 200){
+
+                            //self.$broadcast('newPlace', data);
+
+                            // todo: update Place with new infos
                         }
                     }).
                     error(function(data, status) {
@@ -534,52 +576,49 @@ angular.module('appMain', ['ngSanitize'])
                         ];
                         self.safeApply();
                     },
+                    // ADD Tempory Point. Called from ui.showForm
                     addLocation: function(){
-
-                        console.log("Add LOCATION !");
-                        console.log(this);
-                        console.log(__self);
-
-                        var newFeature = __self.tmpl();
-
-                        console.log(newFeature);
 
                         self.categories.newHash = [];
                         self.ui.states.editStep = 1;
-                        self.ui.states.mode = "edit";
-                        self.ui.states.locationPanel = "show-form";
+
+                        var newFeature = __self.tmpl();
 
                         var attributes = self.datasets.getSelected().properties.attributes;
                         _.each(attributes, function(item){
                             var att = item;
                             att.data='';
                             newFeature.properties.attributes.push(att);
-
                         });
 
-                        __self.feature = newFeature;
+                        //__self.feature = newFeature;
+                        __self.newFeature = newFeature;
 
-                        placesFeature = self.places.addFeature(__self.feature);
-                        console.log("++ placesFeature");
-                        console.log(placesFeature);
-                        __self.feature.id = placesFeature.id;
-                        //self.selectedCategorie = [];
-                        console.log("++ __self.feature");
-                        console.log(__self.feature);
-                        console.log(self    );
+                        // Add a feature to Places
+                        placesFeature = self.places.addFeature(__self.newFeature);
+                        //placesFeature = self.places.addFeature(__self.feature);
+
+                        // Update id
+                        __self.newFeature.id = placesFeature.id;
+                        //__self.feature.id = placesFeature.id;
+
                         self.safeApply();
                     },
                     newLocation: function (event, Point) {
                         console.log('-- New Location');
 
-                        __self.getFeature().geometry.coordinates[1] = Point.LatLng.lat;
-                        __self.getFeature().geometry.coordinates[0] = Point.LatLng.lng;
+                       // __self.getFeature().geometry.coordinates[1] = Point.LatLng.lat;
+                       // __self.getFeature().geometry.coordinates[0] = Point.LatLng.lng;
+                        __self.getNewFeature().geometry.coordinates[1] = Point.LatLng.lat;
+                        __self.getNewFeature().geometry.coordinates[0] = Point.LatLng.lng;
 
                         var tempPlace = _.find(self.places.getFeatures(), function(item){ return item.id == Point.id; });
-                        tempPlace.geometry.coordinates = __self.getCoordinates();
+                        tempPlace.geometry.coordinates = __self.getNewCoordinates();
                         $rootScope.$broadcast("setMarkers", {Places:self.places.getFeatures()});
 
-                        self.setMapCenter();
+                        //self.setMapCenter();
+                        $rootScope.$broadcast("setMapCenter", {lon:self.place.getNewCoordinates()[0],lat:self.place.getNewCoordinates()[1]});
+
                         self.ui.states.editStep = 2;
 
                         if(typeof(google) != "undefined"){
@@ -824,7 +863,7 @@ angular.module('appMain', ['ngSanitize'])
                 self.geocoder = new google.maps.Geocoder();
             }
 
-            var location = new google.maps.LatLng(self.place.getCoordinates()[1], self.place.getCoordinates()[0]);
+            var location = new google.maps.LatLng(self.place.getNewCoordinates()[1], self.place.getNewCoordinates()[0]);
             self.geocoder.geocode( {'latLng': location}, function(results, status) {
 
                 if (status == google.maps.GeocoderStatus.OK) {
@@ -860,7 +899,6 @@ angular.module('appMain', ['ngSanitize'])
         }
 
         $scope.processInverseGeododing = function () {
-            console.log("YES!!!!!!");
 
             var invGeo = self.inverseGeocode;
             var location_type = invGeo.geometry.location_type;
@@ -872,11 +910,13 @@ angular.module('appMain', ['ngSanitize'])
             _.each(address_components, function(item){
                 //console.log(item.types[0] + " >> " + item.long_name);
                 if( item.types[0] === "postal_code"){
-                    self.place.feature.properties.postal_code = item.long_name;
+                    //self.place.feature.properties.postal_code = item.long_name;
+                    self.place.newFeature.properties.postal_code = item.long_name;
                 }
 
                 if( item.types[0] === "locality"){
-                    self.place.feature.properties.city = item.long_name;
+                    //self.place.feature.properties.city = item.long_name;
+                    self.place.newFeature.properties.city = item.long_name;
                 }
 
                 if( item.types[0] === "street_number"){
@@ -888,9 +928,12 @@ angular.module('appMain', ['ngSanitize'])
                 }
             });
 
-            self.place.feature.properties.address = street_number + " " + route;
-            self.place.feature.properties.service = "Google";
-            self.place.feature.properties.location_type = location_type;
+//            self.place.feature.properties.address = street_number + " " + route;
+//            self.place.feature.properties.service = "Google";
+//            self.place.feature.properties.location_type = location_type;
+            self.place.newFeature.properties.address = street_number + " " + route;
+            self.place.newFeature.properties.service = "Google";
+            self.place.newFeature.properties.location_type = location_type;
             self.modal.hide();
             self.safeApply();
         };
