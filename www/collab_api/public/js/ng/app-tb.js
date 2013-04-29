@@ -721,11 +721,6 @@ angular.module('appMain', ['ngSanitize'])
                 }
             }
         };
-
-        //$scope.datasets_panel = "easeIn";
-
-        //$scope.slider = "";
-
         self.modal = {
             display: false,
             header: {
@@ -757,11 +752,7 @@ angular.module('appMain', ['ngSanitize'])
                 this.header.title = content;
             }
         };
-        $scope.inverseGeocode = {};
-        //$scope.mode = "read";
-        //$scope.locationPanel = "hide-form";
-        //$scope.editMode = false;
-
+        self.inverseGeocode = {};
 
         $scope.init = function(){
             console.info('++ INIT ++');
@@ -770,7 +761,6 @@ angular.module('appMain', ['ngSanitize'])
         };
 
         // LISTENERS
-
         $scope.$on(
             "$routeChangeSuccess",
             function( $currentRoute, $previousRoute ){
@@ -788,6 +778,12 @@ angular.module('appMain', ['ngSanitize'])
             }
         );
 
+        $scope.$on('newDatasets', self.datasets.listeners().newDatasets);
+        $scope.$on('newPlaces', self.places.listeners().newPlaces);
+        $scope.$on('newPlace', self.place.listeners().newPlace);
+        $scope.$on('showMsg', self.ui.listeners().showMsg);
+        $scope.$on('hideMsg', self.ui.listeners().hideMsg);
+        $scope.$on('newLocation', self.place.listeners().newLocation);
         $scope.$on('newMapCenter', function ($scope, Point) {
             self.place.getCoordinates()[1]= Point.LatLng.lat;
             self.place.getCoordinates()[0] = Point.LatLng.lng;
@@ -799,25 +795,17 @@ angular.module('appMain', ['ngSanitize'])
 
             $rootScope.$broadcast("setMarkers", {Places:self.places});
 
-
-            //self.$broadcast("hideMsg");
             if(typeof (google) != 'undefined'){
                 self.reverseGeocoding();
+            }else{
+                self.$broadcast("hideMsg");
             }
         });
-
-        $scope.$on('newDatasets', self.datasets.listeners().newDatasets);
-        $scope.$on('newPlaces', self.places.listeners().newPlaces);
-        $scope.$on('newPlace', self.place.listeners().newPlace);
-        $scope.$on('showMsg', self.ui.listeners().showMsg);
-        $scope.$on('hideMsg', self.ui.listeners().hideMsg);
-
-        $scope.$on('newLocation', self.place.listeners().newLocation);
-
         $scope.$on('markerShowDetails', function ($scope, oData) {
             self.place.getPlace(oData.id);
         });
 
+        // GEO FUNC
         $scope.setMapCenter = function(){
             $rootScope.$broadcast("setMapCenter", {lon:self.place.getCoordinates()[0],lat:self.place.getCoordinates()[1]});
         }
@@ -828,28 +816,6 @@ angular.module('appMain', ['ngSanitize'])
                 $rootScope.$broadcast("getMapCenter", {id:self.place.id});
             },100);
         }
-
-/*        $scope.$on('newLocation', function (event, Point) {
-            console.log('New Location');
-
-            self.place.getFeature().geometry.coordinates[1] = Point.LatLng.lat;
-            self.place.getFeature().geometry.coordinates[0] = Point.LatLng.lng;
-
-            var tempPlace = _.find(self.places.getFeatures(), function(item){ return item.id == Point.id; });
-            console.log(tempPlace);
-            tempPlace.geometry = self.place.getFeature().geometry;
-            $rootScope.$broadcast("setMarkers", {Places:self.places.getFeatures()});
-
-            self.setMapCenter();
-            self.ui.states.editStep = 2;
-
-            if(typeof(google) != "undefined"){
-                self.reverseGeocoding();
-            }else{
-                self.$broadcast("hideMsg");
-                self.safeApply();
-            }
-        });*/
 
         $scope.reverseGeocoding = function(){
             // reverse geocode with Google
@@ -893,45 +859,6 @@ angular.module('appMain', ['ngSanitize'])
             $rootScope.$broadcast("geoLocation");
         }
 
-        $scope.getScope = function(){
-            console.log($scope);
-        }
-
-/*        $scope.processInverseGeododing = function () {
-            console.log("PROCESS YES!!!!!!");
-
-            var invGeo = self.inverseGeocode;
-            var location_type = invGeo.geometry.location_type;
-            var address_components = invGeo.address_components;
-
-            var street_number = "";
-            var route = "";
-
-            _.each(address_components, function(item){
-                //console.log(item.types[0] + " >> " + item.long_name);
-                if( item.types[0] === "postal_code"){
-                    self.place.feature.properties.postal_code = item.long_name;
-                }
-
-                if( item.types[0] === "locality"){
-                    self.place.feature.properties.city = item.long_name;
-                }
-
-                if( item.types[0] === "street_number"){
-                    street_number = item.long_name;
-                }
-
-                if( item.types[0] === "route"){
-                    route = item.long_name;
-                }
-            });
-
-            self.place.feature.properties.address = street_number + " " + route;
-            self.place.feature.properties.service = "Google";
-            self.place.feature.properties.location_type = location_type;
-            self.modal.hide();
-            self.safeApply();
-        };*/
         $scope.processInverseGeododing = function () {
             console.log("YES!!!!!!");
 
@@ -968,6 +895,10 @@ angular.module('appMain', ['ngSanitize'])
             self.safeApply();
         };
 
+        // DEBUG STUFF
+        $scope.getScope = function(){
+            console.log($scope);
+        }
         //OBSERVERS
 /*        $scope.$watch('place', function(newValue){
             if($scope.mode == "edit"){
