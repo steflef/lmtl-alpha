@@ -128,17 +128,8 @@ $app->hook('slim.before.dispatch', function() use ($app, $di) {
 // ### Main Endpoint (GET)[**A**]
 // Show the dashboard
 # $app->get("/", $authenticate($app), function () use ($app, $di) {
-$app->get("/",  function () use ($app, $di) {
+$app->get("/",  $authenticate($app), function () use ($app, $di) {
     $app->render('index_v1.php');
-});
-// ***
-
-// ### Dashboard -  */*
-// ### Main Endpoint (GET)[**A**]
-// Show the dashboard
-# $app->get("/", $authenticate($app), function () use ($app, $di) {
-$app->get("/tb",  function () use ($app, $di) {
-    $app->render('tbTmpl.php');
 });
 // ***
 
@@ -309,6 +300,206 @@ $app->get("/places/:id/near", $apiCache($app, $di), function ($placeId) use ($ap
     echo $jsonOutput;
 });
 // ***
+
+// ### API -  */places*
+// ### Add a Place to a dataset (POST)[**A**]
+// ### *JSON*
+$app->post("/places", $apiAuthenticate($app), function () use ($app, $di) {
+
+    //todo validate fields
+    $reqBody = json_decode( $app->request()->getBody(), true );
+/*
+    echo '<pre><code>';
+    print_r($reqBody);
+    echo '</code></pre>';
+    $app->stop();*/
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+    $tableTmpl = $CartoDB->getSchema('places');
+    $fieldsTmpl = $tableTmpl['fields'];
+
+    $fieldsName = array();
+    $values = array();
+
+    //  $sets = array();
+    foreach ($reqBody['properties'] as $field=>$value) {
+
+        if(array_key_exists($field,$fieldsTmpl) && ($field != 'updated_at')){
+            if(!is_array($value)){
+
+                if($fieldsTmpl[$field]['type'] == 'string'){
+                    $values[] = "'". $value."'";
+                }else{
+                    $values[] = $value;
+                }
+                $fieldsName[] = $field;
+            }
+        }
+    }
+
+    //TAGS
+    $tags = array();
+    foreach ($reqBody['properties']['attributes'] as $attribute) {
+        $tags[$attribute['field']] = $attribute['data'];
+    }
+
+    //OTHER FIELDS
+    $others = array(
+        'created_by'=>$_SESSION['userId'],
+        'latitude' => $reqBody['geometry']['coordinates'][1],
+        'longitude' => $reqBody['geometry']['coordinates'][0],
+        'privacy' => 1,
+        'status' =>0,
+        'tags' => "'". json_encode( $tags )."'"
+    );
+    foreach ($others as $f=>$val) {
+
+            $values[] = $val;
+            $fieldsName[] = $f;
+    }
+
+    $geom = "ST_GeomFromText('POINT(".$reqBody['geometry']['coordinates'][0].' '.$reqBody['geometry']['coordinates'][1].")',4326)";
+
+    $sqlStatement = 'INSERT INTO places ('.implode(',',$fieldsName).',the_geom) VALUES ('.implode(',',$values).','.$geom.');';
+    $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+    $request= $client->post()->addPostFields(array(
+        'q' => $sqlStatement,
+        'api_key' => $di['cartodb_api_key']
+    ));
+
+    $response = $request->send();
+    if($response->getStatusCode()!==200){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,'CartoDb::getPlace status '.$response->getStatusCode());
+        $Response->show();
+        $app->stop();
+    }
+
+    // Flush Cache
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->bust('datasets-'.$reqBody['properties']['dataset_id'].'-places');
+
+    $Response = new \CQAtlas\Helpers\Response($app->response(),200, 'ok');
+    $Response->show();
+});
+// ***
+
+// ### API -  */places*
+// ### Add a Place to a dataset (PUT)[**A**]
+// ### *JSON*
+$app->put("/places", $apiAuthenticate($app), function () use ($app, $di) {
+
+   //todo validate fields
+    $reqBody = json_decode( $app->request()->getBody(), true );
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+    $tableTmpl = $CartoDB->getSchema('places');
+    $fieldsTmpl = $tableTmpl['fields'];
+
+    $sets = array();
+    foreach ($reqBody['properties'] as $field=>$value) {
+
+        if(array_key_exists($field,$fieldsTmpl) && ($field != 'updated_at')){
+            if(is_array($value)){
+                $sets[] = $field ."='". json_encode( $value )."'";
+            }else{
+
+                if($fieldsTmpl[$field]['type'] == 'string'){
+                    $sets[] = $field ."='". $value."'";
+                }else{
+                    $sets[] = $field .'='. $value;
+                }
+            }
+        }
+    }
+
+    $geom = "ST_GeomFromText('POINT(".$reqBody['geometry']['coordinates'][0].' '.$reqBody['geometry']['coordinates'][1].")',4326)";
+
+    $sqlStatement = 'UPDATE places SET '.implode(',',$sets).' ,the_geom='.$geom.' WHERE id = '.$reqBody['id'].';';
+
+    $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+    $request= $client->post()->addPostFields(array(
+        'q' => $sqlStatement,
+        'api_key' => $di['cartodb_api_key']
+    ));
+    //$client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+    //$response = $client->get('?q='.$sqlStatement.'&api_key='.$di['cartodb_api_key'])->send();
+    $response = $request->send();
+
+    if($response->getStatusCode()!==200){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,'CartoDb::getPlace status '.$response->getStatusCode());
+        $Response->show();
+        $app->stop();
+    }
+
+    // Flush Cache
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->bust('places-'.$reqBody['id']);
+    $Cache->bust('datasets-'.$reqBody['properties']['dataset_id'].'-places');
+
+    $Response = new \CQAtlas\Helpers\Response($app->response(),200, 'ok');
+    $Response->show();
+});
+// ***
+
+// ### API -  */places/:id*
+// ### Delete a Place (DELETE)[**A**]
+// ### *JSON*
+$app->delete("/places/:id", $apiAuthenticate($app), function ($id) use ($app, $di) {
+
+
+    //FIND Place
+    $sqlStatement = 'SELECT dataset_id FROM places WHERE id ='. (int)$id .';';
+
+    $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+    $request= $client->post()->addPostFields(array(
+        'q' => $sqlStatement,
+        'api_key' => $di['cartodb_api_key']
+    ));
+
+    $GuzResponse = $request->send();
+
+    if($GuzResponse->getStatusCode()!==200){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,'CartoDb::getPlace status '.$GuzResponse->getStatusCode());
+        $Response->show();
+        $app->stop();
+    }
+
+    $data = $GuzResponse->json();
+
+    if( count($data['rows']) !== 1){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,'Dataset ID INVALID');
+        $Response->show();
+        $app->stop();
+    }
+
+    $datasetId = $data['rows'][0]['dataset_id'];
+
+    $sqlStatement = 'DELETE FROM places WHERE id ='. (int)$id.';';
+
+    $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+    $request= $client->post()->addPostFields(array(
+        'q' => $sqlStatement,
+        'api_key' => $di['cartodb_api_key']
+    ));
+
+    $GuzResponse = $request->send();
+
+    if($GuzResponse->getStatusCode()!==200){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,'CartoDb::getPlace status '.$GuzResponse->getStatusCode());
+        $Response->show();
+        $app->stop();
+    }
+
+    // Flush Cache
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->bust('places-'.$id);
+    $Cache->bust('datasets-'. $datasetId .'-places');
+
+    $Response = new \CQAtlas\Helpers\Response($app->response(),200, 'ok');
+    $Response->show();
+});
+// ***
+
 
 // ### API -  */categories*
 // ### Categories List (GET)
