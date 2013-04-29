@@ -420,7 +420,7 @@ class CartoDB
             'ST_AsGeoJSON(the_geom) AS the_geom'
         );
 
-        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE dataset_id = $datasetId;";
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE dataset_id = $datasetId ORDER BY updated_at DESC;";
 
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
         $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
