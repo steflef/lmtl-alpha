@@ -375,6 +375,11 @@ angular.module('appMain', ['ngSanitize'])
                 this.features.push(newPoint);
                 return newPoint;
             },
+            removeFeature:function(id){
+                var newFeatures = _.reject(this.getFeatures(), function(item){ return item.id == id; });
+                this.features = newFeatures;
+                $rootScope.$broadcast("setMarkers", {Places:this.getFeatures(),zoomToBounds:false});
+            },
             init:function(data){
                 this.features = data;
             },
@@ -442,6 +447,21 @@ angular.module('appMain', ['ngSanitize'])
             getNewCoordinates:function(){
                 return this.getNewFeature().geometry.coordinates;
             },
+            updateCategories : function(type){
+                switch (type){
+                    case 'new':
+                        cats = self.categories.newHash;
+                        this.getNewFeature().properties.primary_category_id = cats[0] || 0;
+                        this.getNewFeature().properties.secondary_category_id = cats[1] || 0;
+                        break;
+                    case 'edit':
+
+                        cats = self.categories.editHash;
+                        this.getFeature().properties.primary_category_id = cats[0] || 0;
+                        this.getFeature().properties.secondary_category_id = cats[1] || 0;
+                        break;
+                }
+            },
             init:function(data){
                 this.feature = data;
             },
@@ -463,6 +483,7 @@ angular.module('appMain', ['ngSanitize'])
                     properties:{
                         name:'',
                         description:'',
+                        dataset_id:0,
                         primary_category_id:0,
                         secondary_category_id:0,
                         address: '',
@@ -500,7 +521,6 @@ angular.module('appMain', ['ngSanitize'])
                                     function(){
                                         console.log('TRIGGER');
                                         self.$broadcast('newPlace', data);
-
                                     }
                                     ,600);
                             }
@@ -514,70 +534,98 @@ angular.module('appMain', ['ngSanitize'])
                         });
                 }
             },
-            crud: function(method){
-                console.log("CRUD");
-                var self = $scope;
-            },
             put: function(){
-                console.log("Edit New Places > PUT");
-                var self = $scope;
+                console.log("PPPPPPPUUT");
+                this.updateCategories('edit');
+                if(self.ui.states.quietUpdate){
+                    self.ui.states.quietUpdateMsg = "Sauvegarde en cours ...";
+                }else{
+                    self.$broadcast("showMsg",{title:"Mise à jour en cours",text:"En attente du serveur ... "});
+                }
+                console.log("BEFORE HTTP CALL");
+                self.safeApply();
 
                 $http.put("./places",this.getFeature()).
                     success(function(data) {
+                        self.$broadcast("hideMsg");
                         console.log(status);
                         console.log(data);
                         if(data.status == 200){
                             console.info('QUIET UPDATE');
                             // todo: update Place with new infos
+                            if(self.ui.states.quietUpdate){
+                                self.ui.states.quietUpdateMsg = "Sauvegarde automatique effectuée";
+                            }else{
+                                self.$broadcast("showMsg",{title:"Mise à jour réussie",text:"Confirmation du serveur."},true);
+                            }
+                            self.safeApply();
                         }
+
                     }).
                     error(function(data, status) {
+                        console.info('QUIET UPDATE GONE BAAAAADDDDDD');
+                        self.$broadcast("hideMsg");
                         console.error(status);
                         console.log(data);
+                        if(self.ui.states.quietUpdate){
+                            self.ui.states.quietUpdateMsg = "Échec de La suavegarde automatique. Serveur distant non-disponible.";
+                        }else{
+                            self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Le serveur distant n'est pas disponible en ce moment."},true);
+                        }
+                        self.safeApply();
                     });
+                self.safeApply();
             },
             post: function(){
                 console.log("CREATE New Places > POST");
-                var self = $scope;
+                self.$broadcast("showMsg",{title:"Création en cours",text:"En attente du serveur ... "});
+
+                //add Categories
+                this.updateCategories('new');
 
                 $http.post("./places",this.getNewFeature()).
                     success(function(data) {
+                        self.$broadcast("hideMsg");
                         console.log(status);
                         console.log(data);
                         if(data.status == 200){
-                            console.info('QUIET CREATE');
-                            //self.$broadcast('newPlace', data);
+                            self.$broadcast("showMsg",{title:"Création réussie",text:"Confirmé par le serveur"},true);
 
-                            // todo: update Place with new infos
+                            __self.newFeature = {};
+                            self.ui.showList();
                         }
                     }).
                     error(function(data, status) {
+                        self.$broadcast("hideMsg");
                         console.error(status);
                         console.log(data);
+                        self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Le serveur distant n'est pas disponible en ce moment."},true);
                     });
             },
             delete:function(){
-                //delete Places Point
+
                 // todo: showConfirm
+                self.$broadcast("showMsg",{title:"Suppression en cours",text:"En attente du serveur ... "});
+                var __self = this;
 
-
-                console.log("DELETE Places > DELETE");
-                var self = $scope;
-
-                $http.delete("./places/"+this.getFeature().id).
+                $http.delete("./places/"+this.getFeature().id, {dataset:self.datasets.getSelected().id}).
                     success(function(data) {
+                        self.$broadcast("hideMsg");
                         console.log(status);
                         console.log(data);
                         if(data.status == 200){
 
-                            //self.$broadcast('newPlace', data);
-
-                            // todo: update Place with new infos
+                            self.places.removeFeature(__self.getFeature().id);
+                            __self.feature = {};
+                            self.ui.showList();
+                            self.$broadcast("showMsg",{title:"Suppression définitive",text:"Confirmée par le serveur."},true);
                         }
                     }).
                     error(function(data, status) {
                         console.error(status);
                         console.log(data);
+                        self.$broadcast("hideMsg");
+                        self.$broadcast("showMsg",{title:"Connexion au serveur",text:"Le serveur distant n'est pas disponible en ce moment."},true);
                     });
             },
             listeners: function(){
@@ -601,6 +649,7 @@ angular.module('appMain', ['ngSanitize'])
                         self.ui.states.editStep = 1;
 
                         var newFeature = __self.tmpl();
+                        newFeature.properties.dataset_id = self.datasets.getSelected().id;
 
                         var attributes = self.datasets.getSelected().properties.attributes;
                         _.each(attributes, function(item){
@@ -679,6 +728,8 @@ angular.module('appMain', ['ngSanitize'])
                 mode: "read",
                 editMode: false,
                 editStep: 1,
+                quietUpdateMsg: 'Mode Sauvegarde Automatique',
+                quietUpdate: false,
                 overlay: null,
                 overlayMsg: null
             },
@@ -737,6 +788,7 @@ angular.module('appMain', ['ngSanitize'])
             },
             showList: function(){
                 this.states.slider = "";
+                this.states.mode = "read";
             },
             showDetails: function(){
                 this.states.slider = "details";
@@ -844,13 +896,15 @@ angular.module('appMain', ['ngSanitize'])
         $scope.$on('newMapCenter', function ($scope, Point) {
             self.place.getCoordinates()[1]= Point.LatLng.lat;
             self.place.getCoordinates()[0] = Point.LatLng.lng;
-
-            var tempPlace = _.find(self.places, function(item){ return item.id == Point.id; });
-            console.log(tempPlace);
+            //console.log(Point);
+            //var tempPlace = _.find(self.places.features, function(item){ return item.id == Point.id; });
+            var tempPlace = _.find(self.places.features, function(item){ return item.id == self.place.getFeature().id; });
+            //console.log(tempPlace);
+            console.log(self);
             tempPlace.geometry.coordinates[1] = Point.LatLng.lat;
             tempPlace.geometry.coordinates[0] = Point.LatLng.lng;
 
-            $rootScope.$broadcast("setMarkers", {Places:self.places});
+            $rootScope.$broadcast("setMarkers", {Places:self.places.features});
 
             if(typeof (google) != 'undefined'){
                 self.reverseGeocoding();
@@ -881,7 +935,12 @@ angular.module('appMain', ['ngSanitize'])
                 self.geocoder = new google.maps.Geocoder();
             }
 
-            var location = new google.maps.LatLng(self.place.getNewCoordinates()[1], self.place.getNewCoordinates()[0]);
+            if(self.ui.states.locationPanel == ''){
+                var location = new google.maps.LatLng(self.place.getCoordinates()[1], self.place.getCoordinates()[0]);
+            }else{
+                var location = new google.maps.LatLng(self.place.getNewCoordinates()[1], self.place.getNewCoordinates()[0]);
+            }
+
             self.geocoder.geocode( {'latLng': location}, function(results, status) {
 
                 if (status == google.maps.GeocoderStatus.OK) {
@@ -925,33 +984,56 @@ angular.module('appMain', ['ngSanitize'])
             var street_number = "";
             var route = "";
 
-            _.each(address_components, function(item){
-                //console.log(item.types[0] + " >> " + item.long_name);
-                if( item.types[0] === "postal_code"){
-                    //self.place.feature.properties.postal_code = item.long_name;
-                    self.place.newFeature.properties.postal_code = item.long_name;
-                }
+            if(self.ui.states.locationPanel == ''){
+                _.each(address_components, function(item){
 
-                if( item.types[0] === "locality"){
-                    //self.place.feature.properties.city = item.long_name;
-                    self.place.newFeature.properties.city = item.long_name;
-                }
+                    if( item.types[0] === "postal_code"){
+                        self.place.feature.properties.postal_code = item.long_name;
+                    }
 
-                if( item.types[0] === "street_number"){
-                    street_number = item.long_name;
-                }
+                    if( item.types[0] === "locality"){
+                        self.place.feature.properties.city = item.long_name;
+                    }
 
-                if( item.types[0] === "route"){
-                    route = item.long_name;
-                }
-            });
+                    if( item.types[0] === "street_number"){
+                        street_number = item.long_name;
+                    }
 
-//            self.place.feature.properties.address = street_number + " " + route;
-//            self.place.feature.properties.service = "Google";
-//            self.place.feature.properties.location_type = location_type;
-            self.place.newFeature.properties.address = street_number + " " + route;
-            self.place.newFeature.properties.service = "Google";
-            self.place.newFeature.properties.location_type = location_type;
+                    if( item.types[0] === "route"){
+                        route = item.long_name;
+                    }
+                });
+
+                self.place.feature.properties.address = street_number + " " + route;
+                self.place.feature.properties.service = "Google";
+                self.place.feature.properties.location_type = location_type;
+
+            }else{
+                _.each(address_components, function(item){
+
+                    if( item.types[0] === "postal_code"){
+                        self.place.newFeature.properties.postal_code = item.long_name;
+                    }
+
+                    if( item.types[0] === "locality"){
+                        self.place.newFeature.properties.city = item.long_name;
+                    }
+
+                    if( item.types[0] === "street_number"){
+                        street_number = item.long_name;
+                    }
+
+                    if( item.types[0] === "route"){
+                        route = item.long_name;
+                    }
+                });
+
+                self.place.newFeature.properties.address = street_number + " " + route;
+                self.place.newFeature.properties.service = "Google";
+                self.place.newFeature.properties.location_type = location_type;
+
+            }
+
             self.modal.hide();
             self.safeApply();
         };
@@ -961,11 +1043,27 @@ angular.module('appMain', ['ngSanitize'])
             console.log($scope);
         }
         //OBSERVERS
-/*        $scope.$watch('place', function(newValue){
-            if($scope.mode == "edit"){
+        $scope.$watch('place.feature', function(newValue){
+            if($scope.ui.states.mode == "edit"){
                 console.log(">> WATCHER > place ");
+                //console.log(newValue);
+                if(typeof($scope.ui.states.triggerUpdate) != 'undefined'){
+                    clearTimeout($scope.ui.states.triggerUpdate);
+                }
+
+                $scope.ui.states.triggerUpdate = setTimeout(
+                    function(){
+                        __self = $scope;
+                        if($scope.ui.states.mode == 'edit' && $scope.ui.states.quietUpdate){
+                            console.log("+++ SOFT UPDATE +++");
+                            __self.place.put();
+                            console.log(__self);
+                        }
+                    },
+                    2000
+                );
             }
-        },true);*/
+        },true);
 
 /*        $scope.$watch( function(newV){
             console.log("WATCHER > DIGEST");

@@ -84,6 +84,7 @@
                 <li><a href="#" onclick="return false;" ng-show="(ui.states.mode=='read')" ng-click="ui.toggleMode()"><span class="badge badge-inverse">Mode Lecture</span></a></li>
                 <li><a href="#" onclick="return false;" ng-show="(ui.states.mode=='edit')" ng-click="ui.toggleMode()"><span class="badge badge-info">Mode Edition</span></a></li>
                 <li><a href="#" onclick="return false;"  ng-click="getScope()"><span class="badge badge-info">SCOPE</span></a></li>
+                <li style="float:right;" ng-show="(ui.states.quietUpdate && ui.states.mode == 'edit')"><span class="label label-inverse">{{ui.states.quietUpdateMsg}}</span></li>
             </ul>
         </div>
 
@@ -214,12 +215,12 @@
                                     <div  class="save-console-container">
                                         <div class="save-console-container-sub">
                                             <label class="checkbox" >
-                                                <input ng-model="autosave" ng-true-value="YES" ng-false-value="NO" type="checkbox" ng-checked="true">
+                                                <input ng-model="ui.states.quietUpdate"  type="checkbox" >
                                                 Sauvegarde automatique
                                             </label>
                                         </div>
-                                        <div class="save-btn" ng-show="(autosave == 'NO')">
-                                            <button class="btn btn-normal btn-block btn-success">Sauvegarde</button>
+                                        <div class="save-btn" ng-hide="(ui.states.quietUpdate)">
+                                            <button class="btn btn-normal btn-block btn-success" ng-click="place.put()">Sauvegarde</button>
                                         </div>
                                     </div>
                                 </div>
@@ -294,18 +295,6 @@
                                     </ul>
                                 </div>
                                 <hr>
-                                <div>
-                                    <p>Attributs</p>
-                                    <ul>
-                                        <li class="level2-list" ng-repeat="(tag, val) in place.feature.properties.tags track by $id($index)">
-                                            <small>{{tag}}
-                                                <br>
-                                                <input type="text" ng-model="place.feature.properties.tags[tag]" updateModelOnBlur/>
-                                            </small>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <hr>
                                 <div class="bar">
                                     <p>Catégories</p>
                                     <select id="test_chosen"
@@ -318,8 +307,23 @@
                                             ng-options="d.fr group by d.group for d in categories.options"
                                             chosen-rao>
                                     </select>
-                                    <button class="btn btn-mini" ng-click="place.put()">PUT</button>
-                                    <button class="btn btn-mini" ng-click="getScope()">$SCOPE</button>
+
+                                </div>
+                                <div>
+                                    <p>Attributs</p>
+                                    <ul>
+                                        <li class="level2-list" ng-repeat="(tag, val) in place.feature.properties.tags track by $id($index)">
+                                            <small>{{tag}}
+                                                <br>
+                                                <input type="text" ng-model="place.feature.properties.tags[tag]" updateModelOnBlur/>
+                                            </small>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <hr>
+
+                                <div class="save-btn" >
+                                    <button class="btn btn-normal btn-block btn-danger" ng-click="place.delete()">Suppression</button>
                                 </div>
                             </div>
                         </div>
