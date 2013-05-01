@@ -545,7 +545,7 @@ angular.module('appMain', ['ngSanitize'])
                 console.log("BEFORE HTTP CALL");
                 self.safeApply();
 
-                $http.put("./places",this.getFeature()).
+                $http.put("./places/"+this.getFeature().id,this.getFeature()).
                     success(function(data) {
                         self.$broadcast("hideMsg");
                         console.log(status);

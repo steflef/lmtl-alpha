@@ -99,6 +99,19 @@ $apiAuthenticate = function () use ($app, $di){
     };
 };
 
+$isAdmin = function() use ($app, $di){
+    return function () use ($app, $di) {
+
+        if( !Lmtl::isAdmin($di['db'],$_SESSION['user']) ){
+
+            $Response = new \CQAtlas\Helpers\Response($app->response(), 403, 'Admin Only');
+            $Response->addContent(array('timestamp'=>time()));
+            $Response->show();
+            $app->stop();
+        }
+    };
+};
+
 // #### Cache *Route middleware* for API Calls
 $apiCache = function () use ($app, $di){
     return function () use ($app, $di) {
@@ -153,6 +166,31 @@ $app->get("/datasets/:id", $apiCache($app, $di), function ($datasetId) use ($app
     $from = 'datasets';
     $query = 'WHERE dataset_id='.(Integer)$datasetId.' LIMIT 1';
     processRequest( $app, $di, $from, $query );
+});
+// ***
+
+// ### API -  */datasets/:id*
+// ### Get a Dataset  (PUT) [**AUTH**] [**ADMIN**]
+$app->put("/datasets/:id", $apiAuthenticate, $isAdmin, function ($datasetId) use ($app, $di) {
+
+
+});
+// ***
+
+// ### API -  */datasets/:id*
+// ### Get a Dataset  (DELETE) [**AUTH**] [**ADMIN**]
+$app->delete("/datasets/:id", $apiAuthenticate, $isAdmin, function ($datasetId) use ($app, $di) {
+
+
+});
+// ***
+
+// ### API -  */datasets/:id*
+// ### Get a Dataset  (GET)
+// #### *JSON* - *STATIC CACHE*
+$app->post("/datasets", $apiAuthenticate, $isAdmin, function ($datasetId) use ($app, $di) {
+
+
 });
 // ***
 
@@ -386,7 +424,7 @@ $app->post("/places", $apiAuthenticate($app), function () use ($app, $di) {
 // ### API -  */places*
 // ### Add a Place to a dataset (PUT)[**A**]
 // ### *JSON*
-$app->put("/places", $apiAuthenticate($app), function () use ($app, $di) {
+$app->put("/places/:id", $apiAuthenticate($app), function () use ($app, $di) {
 
    //todo validate fields
     $reqBody = json_decode( $app->request()->getBody(), true );
@@ -499,6 +537,34 @@ $app->delete("/places/:id", $apiAuthenticate($app), function ($id) use ($app, $d
     $Response->show();
 });
 // ***
+
+// ### API -  */users*
+// ### List Users (GET)[**AUTH**][**ADMIN**]
+$app->get("/users", $apiAuthenticate(), $isAdmin(), function () use ($app, $di) {
+    $users = Lmtl::getUsers($di['db']);
+/*    echo '<pre><code>';
+    print_r($users);
+    echo '</code></pre>';*/
+    $Response = new \CQAtlas\Helpers\Response($app->response(),200);
+    $Response->addContent(array('users'=>$users));
+    $Response->show();
+});
+
+// ### API -  */user*
+// ### Get User (GET)[**AUTH**][**ADMIN**]
+$app->get("/user/:id", $apiAuthenticate($app), $isAdmin($app), function ($id) use ($app, $di) {});
+
+// ### API -  */user/:id*
+// ### Edit User (PUT)[**AUTH**][**ADMIN**]
+$app->put("/user/:id", $apiAuthenticate($app), $isAdmin($app), function ($id) use ($app, $di) {});
+
+// ### API -  */user/:id*
+// ### Deleta User (DELETE)[**AUTH**][**ADMIN**]
+$app->delete("/user/:id", $apiAuthenticate($app), $isAdmin($app), function ($id) use ($app, $di) {});
+
+// ### API -  */user/:id*
+// ### Create User (POST)[**AUTH**][**ADMIN**]
+$app->post("/user", $apiAuthenticate($app), $isAdmin($app), function () use ($app, $di) {});
 
 
 // ### API -  */categories*
@@ -1081,67 +1147,27 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
 });
 // ***
 
-// ### /buildTaxonomy
-// ### Build Taxonomy Endpoint (GET)
-// Build Categories Taxonomy on CartoDB via a JSON file
-$app->get("/buildTaxonomy", function () use ($app, $di) {
-
-    $jsonContent = file_get_contents($di['storageDir'].'/database/factual_taxonomy.json');
-    $jsonContentUTF8 = mb_convert_encoding($jsonContent, 'UTF-8', 'ASCII,UTF-8,ISO-8859-1');
-    $taxonomy = json_decode($jsonContentUTF8, true);
-
-    $sqlStatements = array();
-    $insertText = "INSERT INTO categories (id, parent_id, en, fr) VALUES (";
-    $count = 1;
-    foreach ($taxonomy as $item) {
-        $idParent = (count($item['parents']) > 0)?$item['parents'][0]:0;
-        // ##### Escape Single Quotes With an Extra Quote ' => ''#####
-        $en = str_replace("'","''", $item['labels']['en']);
-        $fr = str_replace("'","''", $item['labels']['fr']);
-        $sqlStatements[] =  $insertText . $count.",".$idParent.",'".$en."','".$fr."');";
-        $count ++;
-    }
-
-    $fields = array(
-        'q' => implode('',$sqlStatements),
-        'api_key' => $di['cartodb_api_key']
-    );
-
-    $url = 'http://'.$di['cartodb_subdomain'].$di['cartodb_endpoint'];
-    $curlResult = \CQAtlas\Helpers\CqUtil::curlPost($url, json_encode($fields));
-
-    echo '<pre><code>';
-    print_r($curlResult);
-    echo '</code></pre>';
-});
-// ***
-
 // ### /buildCategories
 // ### Build Categories Endpoint (GET)
 // Build Categories on CartoDB via an Excel file
 $app->get("/buildCategories", function () use ($app, $di) {
 
     $sourcePath ='./storage/database/categories.xlsx';
-    $Reader = new \CQAtlas\Helpers\ExcelReader($sourcePath,0);
+    $Reader = new \CQAtlas\Helpers\ExcelReaderV2($sourcePath,0);
     $rows = $Reader->getRows();
 
     $sqlStatements = array();
-    //$cache = array();
     $insertText = "INSERT INTO categories (id, parent_fr, fr, icon) VALUES (";
 
     $count = 1;
     foreach ($rows as $item) {
         // ##### Escape Single Quotes With an Extra Quote ' => ''#####
         $parent_fr = str_replace("'","''", $item['Regroupement']);
+        $rep = str_replace("'","''", $item['Repertoire']);
         $fr = str_replace("'","''", $item['Cat']);
-        $icon = \CQAtlas\Helpers\CqUtil::slugify($parent_fr).'/'.\CQAtlas\Helpers\CqUtil::slugify($fr).'.png';
+        $_icon = str_replace("'","''", $item['Icons']);
+        $icon = \CQAtlas\Helpers\CqUtil::slugify($rep).'/'.$_icon;
         $sqlStatements[] =  $insertText . $count.",'".$parent_fr."','".$fr."','".$icon."');";
-/*        $cache[] = array(
-            'id' => $count,
-            'group' => $parent_fr,
-            'cat' => $fr,
-            'i' => $icon
-        );*/
         $count ++;
     }
 
@@ -1151,11 +1177,23 @@ $app->get("/buildCategories", function () use ($app, $di) {
     );
 
     $url = sprintf('http://%s.%s', $di['cartodb_subdomain'],$di['cartodb_endpoint']);
-    $curlResult = \CQAtlas\Helpers\CqUtil::curlPost($url, json_encode($fields));
 
-    echo '<pre><code>';
-    print_r($curlResult);
-    echo '</code></pre>';
+    $client = new \Guzzle\Http\Client($url);
+    $request= $client->post()->addPostFields($fields);
+
+    $GuzResponse = $request->send();
+    if($GuzResponse->getStatusCode()!==200){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,'CartoDb::buildCategories status '.$GuzResponse->getStatusCode());
+        $Response->show();
+        $app->stop();
+    }
+
+    // Flush Cache
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->bust('categories');
+
+    $Response = new \CQAtlas\Helpers\Response($app->response(),200, 'ok');
+    $Response->show();
 });
 // ***
 
