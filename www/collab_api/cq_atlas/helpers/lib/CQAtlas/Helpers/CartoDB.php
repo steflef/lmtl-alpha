@@ -459,6 +459,112 @@ class CartoDB
         return $Formatter->getOutput();
     }
 
+    public function getRegions()
+    {
+        $tableName = 'poly';
+
+        # Build Queries
+        $fields = array(
+            'id',
+            'acronyme',
+            'nom_abrg',
+            'officiel',
+            'ST_AsGeoJSON(the_geom) AS the_geom'
+        );
+
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName ORDER BY id ASC;";
+
+        $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+        $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+
+        if($response->getStatusCode()!==200){
+            throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
+        }
+
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+        return $Formatter->getOutput();
+    }
+
+
+    public function getRegionsIn($ids)
+    {
+        $tableName = 'poly';
+
+        # Build Queries
+        $fields = array(
+            'id',
+            'acronyme',
+            'nom_abrg',
+            'officiel',
+            'ST_AsGeoJSON(the_geom) AS the_geom'
+        );
+
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE id IN($ids);";
+
+/*        echo $sqlStatement;
+        exit;*/
+
+        $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+        $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+
+        if($response->getStatusCode()!==200){
+            throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
+        }
+
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+        return $Formatter->getOutput();
+    }
+
+    public function getRegion($id)
+    {
+        $tableName = 'poly';
+
+        # Build Queries
+        $fields = array(
+            'id',
+            'acronyme',
+            'nom_abrg',
+            'officiel',
+            'ST_AsGeoJSON(the_geom) AS the_geom'
+        );
+
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName WHERE id=$id LIMIT 1;";
+
+        $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+        $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+
+        if($response->getStatusCode()!==200){
+            throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
+        }
+
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+        return $Formatter->getOutput();
+    }
+
+    public function getRegionsList()
+    {
+        $tableName = 'poly';
+
+        # Build Queries
+        $fields = array(
+            'id',
+            'acronyme',
+            'nom_abrg',
+            'officiel'
+        );
+
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName ORDER BY id ASC;";
+
+        $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+        $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+
+        if($response->getStatusCode()!==200){
+            throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
+        }
+
+        return $response->json();
+    }
+
     public function getPlacesNear($placeId,$lon,$lat,$distance=5000)
     {
         $tableName = 'places';

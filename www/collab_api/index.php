@@ -138,9 +138,9 @@ $app->hook('slim.before.dispatch', function() use ($app, $di) {
 // ***
 
 // ### HomePage -  */*
-// ### Main Endpoint (GET)[**A**]
+// ### Main Endpoint (GET)[**AUTH**]
 // Show the dashboard
-# $app->get("/", $authenticate($app), function () use ($app, $di) {
+// (l 144)
 $app->get("/",  $authenticate($app), function () use ($app, $di) {
     $app->render('tb.php');
 });
@@ -161,36 +161,36 @@ $app->get("/datasets", $apiCache($app, $di), function () use ($app, $di) {
 // ### API -  */datasets/:id*
 // ### Get a Dataset  (GET)
 // #### *JSON* - *STATIC CACHE*
-$app->get("/datasets/:id", $apiCache($app, $di), function ($datasetId) use ($app, $di) {
+$app->get("/datasets/:id", $apiCache($app, $di), function ($id) use ($app, $di) {
 
-    $from = 'datasets';
-    $query = 'WHERE dataset_id='.(Integer)$datasetId.' LIMIT 1';
-    processRequest( $app, $di, $from, $query );
+    $params = new stdClass;
+    $params->from = 'datasets';
+    $params->query = 'WHERE id='.(int)$id.' LIMIT 1';
+    processRequest( $app, $di, $params );
 });
 // ***
 
 // ### API -  */datasets/:id*
-// ### Get a Dataset  (PUT) [**AUTH**] [**ADMIN**]
+// ### Edit a Dataset  (PUT) [**AUTH**] [**ADMIN**]
 $app->put("/datasets/:id", $apiAuthenticate, $isAdmin, function ($datasetId) use ($app, $di) {
 
-
+    // #### :: TODO
 });
 // ***
 
 // ### API -  */datasets/:id*
-// ### Get a Dataset  (DELETE) [**AUTH**] [**ADMIN**]
+// ### Delete a Dataset  (DELETE) [**AUTH**] [**ADMIN**]
 $app->delete("/datasets/:id", $apiAuthenticate, $isAdmin, function ($datasetId) use ($app, $di) {
 
-
+    // #### :: TODO
 });
 // ***
 
 // ### API -  */datasets*
-// ### Get a Dataset  (POST)
-// #### *JSON* - *STATIC CACHE*
+// ### Create a Dataset  (POST)  [**AUTH**] [**ADMIN**]
 $app->post("/datasets", $apiAuthenticate, $isAdmin, function ($datasetId) use ($app, $di) {
 
-
+    // #### :: TODO
 });
 // ***
 
@@ -213,12 +213,49 @@ $app->get("/datasets/:id/places", $apiCache($app, $di), function ($datasetId) us
 
     $Response = new \CQAtlas\Helpers\Response($app->response());
     $Response->addContent(array('timestamp'=>time(),'results'=>$places));
-    $output = $Response->toArray();
-    $jsonOutput = json_encode($output);
 
     // #### Cache the Response
     $Cache = new \CQAtlas\Helpers\Cache($app, $di);
-    $Cache->save($jsonOutput);
+    $Cache->save($Response->toJson());
+
+    $Response->show();
+});
+// ***
+
+// ### TEST
+// ### API -  */datasets/:id/places*
+// ### Get a List of places for a Dataset  (GET)
+// #### *JSON* - *STATIC CACHE*
+$app->get("/datasets/:id/places_exp", function ($datasetId) use ($app, $di) {
+
+    $Request = $app->request();
+    // format and return response body in specified format
+    $mediaType = $Request->getMediaType();
+
+    echo '<pre><code>';
+    print_r($Request->get());
+    echo "<br>".$mediaType;
+    echo '</code></pre>';
+$app->stop();
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+
+    try{
+        $places = $CartoDB->getPlaces($datasetId);
+
+    }catch (\Exception $e){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
+        //$Response->addContent(array('trace' => $e->getTrace()[0]));
+        $Response->show();
+        $app->stop();
+    }
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('timestamp'=>time(),'results'=>$places));
+
+    // #### Cache the Response
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->save($Response->toJson());
 
     $Response->show();
 });
@@ -243,11 +280,9 @@ $app->get("/places/:id", $apiCache($app, $di), function ($placeId) use ($app, $d
     $Response = new \CQAtlas\Helpers\Response($app->response());
     $Response->addContent(array('timestamp'=>time(),'results'=>$placeDetails));
 
-    $jsonOutput = json_encode($Response->toArray());
-
     // #### Cache the Response
     $Cache = new \CQAtlas\Helpers\Cache($app, $di);
-    $Cache->save($jsonOutput);
+    $Cache->save($Response->toJson());
 
     $Response->show();
 });
@@ -274,19 +309,18 @@ $app->get("/places/:id/near", $apiCache($app, $di), function ($placeId) use ($ap
     }
 
     $Response = new \CQAtlas\Helpers\Response($app->response());
-    $output = array_merge($Response->toArray(),array('timestamp'=>time(),'results'=>$placesNearby));
-    $jsonOutput = json_encode($output);
+    $Response->addContent(array('timestamp'=>time(),'results'=>$placesNearby));
 
     // #### Cache the Response
     $Cache = new \CQAtlas\Helpers\Cache($app, $di);
-    $Cache->save($jsonOutput);
+    $Cache->save($Response->toJson());
 
-    echo $jsonOutput;
+    $Response->show();
 });
 // ***
 
 // ### API -  */places*
-// ### Add a Place to a dataset (POST)[**A**]
+// ### Add a Place to a dataset (POST)[**AUTH**]
 // ### *JSON*
 $app->post("/places", $apiAuthenticate($app), function () use ($app, $di) {
 
@@ -368,7 +402,7 @@ $app->post("/places", $apiAuthenticate($app), function () use ($app, $di) {
 // ***
 
 // ### API -  */places/:id*
-// ### Add a Place to a dataset (PUT)[**A**]
+// ### Add a Place to a dataset (PUT)[**AUTH**]
 // ### *JSON*
 $app->put("/places/:id", $apiAuthenticate($app), function () use ($app, $di) {
 
@@ -426,7 +460,7 @@ $app->put("/places/:id", $apiAuthenticate($app), function () use ($app, $di) {
 // ***
 
 // ### API -  */places/:id*
-// ### Delete a Place (DELETE)[**A**]
+// ### Delete a Place (DELETE)[**AUTH**]
 // ### *JSON*
 $app->delete("/places/:id", $apiAuthenticate($app), function ($id) use ($app, $di) {
 
@@ -484,6 +518,130 @@ $app->delete("/places/:id", $apiAuthenticate($app), function ($id) use ($app, $d
 });
 // ***
 
+// ### API -  */regions*
+// ### Get Regions FULL >2mb (GET)
+// #### *JSON* - *STATIC CACHE*
+$app->get("/regions/full", $apiCache($app, $di), function () use ($app, $di) {
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+
+    try{
+        $regions = $CartoDB->getRegions();
+
+    }catch (\Exception $e){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
+        $Response->show();
+        $app->stop();
+    }
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('timestamp'=>time(),'results'=>$regions));
+
+    $jsonOutput = json_encode($Response->toArray());
+
+    // #### Cache the Response
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->save($jsonOutput);
+
+    $Response->show();
+});
+// ***
+
+// ### API -  */regions*
+// ### Get Regions List only (GET)
+// #### *JSON* - *STATIC CACHE*
+$app->get("/regions/", $apiCache($app, $di), function () use ($app, $di) {
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+
+    try{
+        $regions = $CartoDB->getRegionsList();
+
+    }catch (\Exception $e){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
+        $Response->show();
+        $app->stop();
+    }
+
+    foreach ($regions['rows'] as &$row) {
+        $row['uri'] = $di['baseUrl']. 'regions/'.$row['id'];
+    }
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('timestamp'=>time(),'results'=>$regions));
+
+    $jsonOutput = json_encode($Response->toArray());
+
+    // #### Cache the Response
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->save($jsonOutput);
+
+    $Response->show();
+});
+// ***
+
+// ### API -  */regions/:id*
+// ### Get Region by id  (GET)
+// #### *JSON* - *STATIC CACHE*
+$app->get("/regions/:id", $apiCache($app, $di), function ($id) use ($app, $di) {
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+
+    try{
+        $regions = $CartoDB->getRegion($id);
+
+    }catch (\Exception $e){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
+        $Response->show();
+        $app->stop();
+    }
+
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('timestamp'=>time(),'results'=>$regions));
+
+    $jsonOutput = json_encode($Response->toArray());
+
+    // #### Cache the Response
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->save($jsonOutput);
+
+    $Response->show();
+});
+// ***
+
+// ### API -  */regions/in/:id*
+// ### Get Regions In List (GET)
+// #### *JSON* - *STATIC CACHE*
+$app->get("/regions/in/:ids", $apiCache($app, $di), function ($ids) use ($app, $di) {
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+
+
+    try{
+        $regions = $CartoDB->getRegionsIn($ids);
+
+    }catch (\Exception $e){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
+        $Response->show();
+        $app->stop();
+    }
+
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('timestamp'=>time(),'results'=>$regions));
+
+    $jsonOutput = json_encode($Response->toArray());
+
+    // #### Cache the Response
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->save($jsonOutput);
+
+    $Response->show();
+});
+// ***
+
+
 // ### */admin/users*
 // ### List Users (GET)[**AUTH**][**ADMIN**]
 $app->get("/admin/users", $authenticate(), $isAdmin(), function () use ($app, $di) {
@@ -492,14 +650,11 @@ $app->get("/admin/users", $authenticate(), $isAdmin(), function () use ($app, $d
 });
 
 
-
 // ### API -  */users*
 // ### List Users (GET)[**AUTH**][**ADMIN**]
 $app->get("/users", $apiAuthenticate(), $isAdmin(), function () use ($app, $di) {
     $users = Lmtl::getUsers($di['db']);
-/*    echo '<pre><code>';
-    print_r($users);
-    echo '</code></pre>';*/
+
     $Response = new \CQAtlas\Helpers\Response($app->response(),200);
     $Response->addContent(array('users'=>$users));
     $Response->show();
@@ -522,7 +677,7 @@ $app->get("/users/:id", $apiAuthenticate(), function ($id) use ($app, $di, $isAd
     $Response->show();
 });
 
-// ### API -  */users/:id*
+// ### API - */users/:id*
 // ### Edit User (PUT)[**AUTH**][**ADMIN**]
 $app->put("/users/:id", $apiAuthenticate(), $isAdmin(), function ($id) use ($app, $di) {
 
@@ -543,7 +698,7 @@ $app->put("/users/:id", $apiAuthenticate(), $isAdmin(), function ($id) use ($app
 });
 
 // ### API -  */users/:id*
-// ### Deleta User (DELETE)[**AUTH**][**ADMIN**]
+// ### Delete User (DELETE)[**AUTH**][**ADMIN**]
 $app->delete("/users/:id", $apiAuthenticate(), $isAdmin(), function ($id) use ($app, $di) {
 
     $results = Lmtl::deleteUser($di['db'],$id);
@@ -552,7 +707,7 @@ $app->delete("/users/:id", $apiAuthenticate(), $isAdmin(), function ($id) use ($
     $Response->show();
 });
 
-// ### API -  */users/:id*
+// ### API - */users*
 // ### Create User (POST)[**AUTH**][**ADMIN**]
 $app->post("/users", $apiAuthenticate($app), $isAdmin($app), function () use ($app, $di) {
     $reqBody = json_decode( $app->request()->getBody(), true );
@@ -567,12 +722,11 @@ $app->post("/users", $apiAuthenticate($app), $isAdmin($app), function () use ($a
 
     $Response = new \CQAtlas\Helpers\Response($app->response());
     $Response->addContent(array('results'=>$results));
-    //$Response->addContent(array('results'=>$params));
     $Response->show();
 });
 
 
-// ### API -  */categories*
+// ### API - */categories*
 // ### Categories List (GET)
 // #### *JSON* - *STATIC CACHE*
 $app->get("/categories", $apiCache($app, $di), function () use ($app, $di) {
@@ -607,14 +761,18 @@ function processRequest(\Slim\Slim $app, \Pimple $di, stdClass $params){
     }
 
     $Response = new \CQAtlas\Helpers\Response($app->response());
-    $output = array_merge($Response->toArray(),array('timestamp'=>time(),'results'=>$Results));
-    $jsonOutput = json_encode($output);
+    $Response->addContent(array('timestamp'=>time(),'results'=>$Results));
+    //$Response->show();
+    //$output = array_merge($Response->toArray(),array('timestamp'=>time(),'results'=>$Results));
+    //$jsonOutput = json_encode($output);
 
     // #### Cache the Response
     $Cache = new \CQAtlas\Helpers\Cache($app, $di);
-    $Cache->save($jsonOutput);
+    $Cache->save($Response->toJson());
 
-    $app->response()->body($jsonOutput); #echo $jsonOutput;
+    $Response->show();
+
+    //$app->response()->body($jsonOutput); #echo $jsonOutput;
 }
 // ***
 

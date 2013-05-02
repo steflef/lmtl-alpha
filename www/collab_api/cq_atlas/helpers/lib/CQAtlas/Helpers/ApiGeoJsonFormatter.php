@@ -12,6 +12,7 @@ class ApiGeoJsonFormatter
 
     public function __construct($source, $schema, $CartoDB)
     {
+        ini_set('memory_limit', '256M');
         $this->_source = $source;
         $this->_schema = $schema;
         $this->CartoDB = $CartoDB;
