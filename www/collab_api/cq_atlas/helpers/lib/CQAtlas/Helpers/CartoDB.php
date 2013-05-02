@@ -160,6 +160,28 @@ class CartoDB
         'categories'=>array(
             'fields'=>array(
                 'id' => array('type' =>'number'),
+                'acronyme'      => array('type' =>'string'),
+                'nom_abrg'  => array('type' =>'string'),
+                'officiel' => array('type' =>'string'),
+                'the_geom'=> array('type' =>'geom'),
+                'updated_at' => array('type' =>'string')
+            ),
+            'output_tmpl'=>array(
+                'id' => 'id',
+                'acronyme'      => 'acronyme',
+                'nom_abrg'  => 'nom_abrg',
+                'officiel' => 'officiel',
+                'the_geom'=> 'the_geom',
+                'updated_at' => 'updated_at'
+            ),
+
+            'output_exp'=>array(
+            )
+        ),
+
+        'poly'=>array(
+            'fields'=>array(
+                'id' => array('type' =>'number'),
                 'parent_id' => array('type' =>'number'),
                 'parent_fr'   =>array('type' =>'string'),
                 'en'   =>array('type' =>'string'),
@@ -175,6 +197,10 @@ class CartoDB
             ),
 
             'output_exp'=>array(
+                'the_geom' => array(
+                    'func' => 'Json2array',
+                    'dependency' => 'the_geom'
+                )
             )
         )
     );
