@@ -142,7 +142,7 @@ $app->hook('slim.before.dispatch', function() use ($app, $di) {
 // Show the dashboard
 # $app->get("/", $authenticate($app), function () use ($app, $di) {
 $app->get("/",  $authenticate($app), function () use ($app, $di) {
-    $app->render('index_v1.php');
+    $app->render('tb.php');
 });
 // ***
 
@@ -185,24 +185,13 @@ $app->delete("/datasets/:id", $apiAuthenticate, $isAdmin, function ($datasetId) 
 });
 // ***
 
-// ### API -  */datasets/:id*
-// ### Get a Dataset  (GET)
+// ### API -  */datasets*
+// ### Get a Dataset  (POST)
 // #### *JSON* - *STATIC CACHE*
 $app->post("/datasets", $apiAuthenticate, $isAdmin, function ($datasetId) use ($app, $di) {
 
 
 });
-// ***
-
-// ### API -  */datasets/:id/places*
-// ### Get a List of places for a Dataset  (GET)
-// #### *JSON* - *STATIC CACHE*
-/*$app->get("/datasets/:id/places", $apiCache($app, $di), function ($datasetId) use ($app, $di) {
-
-    $from = 'places';
-    $query =  'WHERE dataset_id='.(Integer)$datasetId;
-    processRequest( $app, $di, $from, $query );
-});*/
 // ***
 
 // ### API -  */datasets/:id/places*
@@ -231,49 +220,6 @@ $app->get("/datasets/:id/places", $apiCache($app, $di), function ($datasetId) us
     $Cache = new \CQAtlas\Helpers\Cache($app, $di);
     $Cache->save($jsonOutput);
 
-    $Response->show();
-});
-// ***
-
-// ### API -  */datasets/:id/places*
-// ### Add a Place to a dataset (PUT)[**A**]
-// ### *JSON*
-$app->post("/datasets/:datasetId/places", function ($datasetId) use ($app, $di) {
-
-    #1 validate fields
-    $reqBody = json_decode( $app->request()->getBody(), true );
-
-    echo '<pre><code>';
-    print_r($reqBody);
-    echo '</code></pre>';
-    $app->stop();
-
-
-    $fields = array();
-    $values = array();
-    foreach ($reqBody as $field=>$value) {
-        $field[]=$field;
-        $values[]=$value;
-    }
-
-    $sql = 'INSERT INTO places ('.implode(',',$fields).') VALUES ('.implode(',',$values).');';
-    $fields = array(
-        'q' => $sql,
-        'api_key' => $di['cartodb_api_key']
-    );
-
-    $url = 'http://'.$di['cartodb_subdomain'].$di['cartodb_endpoint'];
-
-    $httpResponse = \CQAtlas\Helpers\CqUtil::curlPost($url, json_encode($fields));
-
-    if( $httpResponse['status'] !== 200 ){
-        $Response = new \CQAtlas\Helpers\Response($app->response(),400,'Error');
-        $Response->show();
-        $app->stop();
-    }
-
-    $Response = new \CQAtlas\Helpers\Response($app->response(),200, $Response->toArray());
-    //$jsonOutput = json_encode($Response->toArray());
     $Response->show();
 });
 // ***
@@ -421,7 +367,7 @@ $app->post("/places", $apiAuthenticate($app), function () use ($app, $di) {
 });
 // ***
 
-// ### API -  */places*
+// ### API -  */places/:id*
 // ### Add a Place to a dataset (PUT)[**A**]
 // ### *JSON*
 $app->put("/places/:id", $apiAuthenticate($app), function () use ($app, $di) {
@@ -538,6 +484,15 @@ $app->delete("/places/:id", $apiAuthenticate($app), function ($id) use ($app, $d
 });
 // ***
 
+// ### */admin/users*
+// ### List Users (GET)[**AUTH**][**ADMIN**]
+$app->get("/admin/users", $authenticate(), $isAdmin(), function () use ($app, $di) {
+
+    $app->render('users.php');
+});
+
+
+
 // ### API -  */users*
 // ### List Users (GET)[**AUTH**][**ADMIN**]
 $app->get("/users", $apiAuthenticate(), $isAdmin(), function () use ($app, $di) {
@@ -550,21 +505,71 @@ $app->get("/users", $apiAuthenticate(), $isAdmin(), function () use ($app, $di) 
     $Response->show();
 });
 
-// ### API -  */user*
-// ### Get User (GET)[**AUTH**][**ADMIN**]
-$app->get("/user/:id", $apiAuthenticate($app), $isAdmin($app), function ($id) use ($app, $di) {});
+// ### API -  */users*
+// ### Get User (GET)[**AUTH**]
+$app->get("/users/:id", $apiAuthenticate(), function ($id) use ($app, $di, $isAdmin) {
 
-// ### API -  */user/:id*
+    if( $_SESSION['userId'] == $id ){
+        $userInfos = Lmtl::getUserById($di['db'],$id);
+
+    }else{
+        $isAdmin();
+        $userInfos = Lmtl::getUserById($di['db'],$id);
+    }
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('user'=>$userInfos));
+    $Response->show();
+});
+
+// ### API -  */users/:id*
 // ### Edit User (PUT)[**AUTH**][**ADMIN**]
-$app->put("/user/:id", $apiAuthenticate($app), $isAdmin($app), function ($id) use ($app, $di) {});
+$app->put("/users/:id", $apiAuthenticate(), $isAdmin(), function ($id) use ($app, $di) {
 
-// ### API -  */user/:id*
+    $reqBody = json_decode( $app->request()->getBody(), true );
+    // todo: Validate
+
+    $params = $reqBody;
+    $id = $params['id'];
+    unset($params['id']);
+    unset($params['created_at']);
+
+
+    $results = Lmtl::updateUser($di['db'],$id,$reqBody);
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('results'=>$results));
+    $Response->show();
+});
+
+// ### API -  */users/:id*
 // ### Deleta User (DELETE)[**AUTH**][**ADMIN**]
-$app->delete("/user/:id", $apiAuthenticate($app), $isAdmin($app), function ($id) use ($app, $di) {});
+$app->delete("/users/:id", $apiAuthenticate(), $isAdmin(), function ($id) use ($app, $di) {
 
-// ### API -  */user/:id*
+    $results = Lmtl::deleteUser($di['db'],$id);
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('results'=>$results));
+    $Response->show();
+});
+
+// ### API -  */users/:id*
 // ### Create User (POST)[**AUTH**][**ADMIN**]
-$app->post("/user", $apiAuthenticate($app), $isAdmin($app), function () use ($app, $di) {});
+$app->post("/users", $apiAuthenticate($app), $isAdmin($app), function () use ($app, $di) {
+    $reqBody = json_decode( $app->request()->getBody(), true );
+    // todo: Validate
+
+    $params = $reqBody;
+    unset($params['id']);
+    unset($params['created_at']);
+
+
+    $results = Lmtl::insertUser($di['db'],$params);
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('results'=>$results));
+    //$Response->addContent(array('results'=>$params));
+    $Response->show();
+});
 
 
 // ### API -  */categories*
@@ -676,7 +681,7 @@ $app->post("/login", function () use ($app, $di) {
     $password = $app->request()->post('password');
 
     $errors = array();
-    $userInfos = Lmtl::getUser($di['db'],$email);
+    $userInfos = Lmtl::getUserByEmail($di['db'],$email);
 
     if (count($userInfos) == 0) {
         $errors['email'] = "Courriel introuvable";
@@ -712,7 +717,7 @@ $app->post("/auth", function () use ($app, $di) {
     $password = $app->request()->post('password');
 
     $errors = array();
-    $userInfos = Lmtl::getUser($di['db'],$email);
+    $userInfos = Lmtl::getUserByEmail($di['db'],$email);
 
     if (count($userInfos) == 0) {
         $errors[] = "Courriel introuvable";

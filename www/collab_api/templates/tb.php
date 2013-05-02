@@ -1,4 +1,4 @@
-<? require 'header_v1.php' ?>
+<? require 'tbHeader.php' ?>
 
     <div class="content w-scrollbar perspective">
     <section ng-controller="CollectCtrl" ng-init="init()">
@@ -488,7 +488,5 @@
     </section>
 
     </section>
-
-
     </div>
-<? require 'footer_v1.php' ?>
+<? require 'footer.php' ?>
