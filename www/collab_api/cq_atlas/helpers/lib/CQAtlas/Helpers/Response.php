@@ -67,13 +67,13 @@ class Response
         return array_merge($basic, $this->_extraContent);
     }
 
+    public function toJson(){
+
+        return json_encode($this->toArray());
+    }
+
     public function show()
     {
-/*        $response = array(
-            "status" => $this->_status,
-            "msg" => $this->_msg
-        );*/
-
         $this->_response['Content-Type'] = $this->_contentType;
         $this->_response['Encoding'] = ' UTF-8';
         $this->_response->status($this->_status);
