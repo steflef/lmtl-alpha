@@ -72,10 +72,12 @@ angular.module('appMain', ['ngSanitize'])
                 var partials ="";
                 if(scope.places.features.length>0){
                     _.each(newValue, function(item){
+                        var iconUri = "./public/img/icons/"+scope.categories.options[item.properties.primary_category_id].i;
                         var tmpl = '<div class="box">';
                         tmpl    += '    <div class="left-space">';
                         tmpl    += '     <div>';
-                        tmpl    += '         <img src="./public/img/icons/mapiconscollection-health-education-cccccc-default/hospital-building.png" alt="icon">';
+                        //tmpl    += '         <img src="./public/img/icons/mapiconscollection-health-education-cccccc-default/hospital-building.png" alt="icon">';
+                        tmpl    += '         <img src="'+ iconUri +'" alt="icon">';
                         tmpl    += '         </div>';
                         tmpl    += '     </div>';
                         tmpl    += '     <div class="right-space">';
