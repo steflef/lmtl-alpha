@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exemples</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../docs/images/favicon.png" />
+
+    <!-- Twitter Bootstrap -->
+    <link rel="stylesheet" href="./style/bootstrap.css" media="screen, projection">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="./js/leaflet/0.5.1/leaflet.css" media="screen, projection" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="./js/leaflet/0.5.1/leaflet.ie.css" /><![endif]-->
+    <script src="./js/leaflet/0.5.1/leaflet-src.js"></script>
+
+    <!-- jQuery -->
+    <script src="./js/jquery/1.8.3/jquery.min.js"></script>
+    <script src="./js/jquery/jquery.json-2.4.min.js"></script>
+<!--
+    <script src="../docs/highlight/highlight.pack.js"></script>
+    <link rel="stylesheet" href="../docs/highlight/styles/github.css" />-->
+    <!--<script type="application/json" src="../collab_api/regions/1"></script>-->
+    <style type="text/css">
+        .map{
+            border:1px solid #ccc;
+            height: 180px;
+        }
+    </style>
+
+
+    <script>
+        CM_ATTR = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://cloudmade.com">CloudMade</a>';
+        CM_URL = 'http://{s}.tile.cloudmade.com/d4fc77ea4a63471cab2423e66626cbb6/{styleId}/256/{z}/{x}/{y}.png';
+
+        OSM_URL = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        OSM_ATTR = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+        STAMEN_ATTR ='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.';
+        STAMEN_TONER_HYBRID_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.png';
+        STAMEN_TONER_LINES_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}.png';
+        STAMEN_TONER_BACKGROUND_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.png';
+        STAMEN_TONER_LITE_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png';
+
+        LATLNG = [45.528293,-73.59246];
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>LMTL</h1>
+    <h3>Intégration des composantes cartographiques dans le cadre du projet LMTL.
+        </h3>
+    <h2>Intégration de Leaflet, le moteur cartographique</h2>
+    <p>Nous utiliserons la librairie cartographique <a href="http://leafletjs.com/">Leaflet</a> pour cette série d'exemples.
+        Il s'agit d'une librairie très performante et le projet est très bien <a href="http://leafletjs.com/reference.html">documenté</a>.
+        Plusieurs autres bonnes options sont disponibles dont <a href="http://openlayers.org/">OpenLayers</a>, <a href="http://d3js.org/">D3</a>, <a href="https://maps.google.ca/">Google Maps</a>, etc.
+    </p>
+
+    <p>Nous allons reprendre le <a href="http://leafletjs.com/examples/quick-start.html">tutoriel d'introduction à Leaflet</a> vous permettant d'intégrer une carte dans vos pages Web.</p>
+
+    <div id="map" class="map" style="height: 140px"></div>
+
+    <h3>Préparer la page Web</h3>
+
+    <p>Avant de pouvoir intégrer des cartes sur votre page Web, vous devez suivre ces étapes de préparation:</p>
+
+    <ul>
+        <li>
+            <p>Inclure la référence à la feuille de style de la librairie Leaflet dans la section head de votre document:</p>
+    
+        <pre><code> &lt;link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" /&gt;
+            &lt;!--[if lte IE 8]&gt;
+            &lt;link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" /&gt;
+            &lt;![endif]--&gt;
+        </code></pre>
+        </li>
+        <li>
+            <p>Inclure la librairie javascript Leaflet:</p>
+    
+        <pre><code> &lt;script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"&gt;&lt;/script&gt;
+        </code></pre>
+        </li>
+        <li>
+            <p>Ajouter un élément <code>div</code> avec un identifiant unique <code>id</code> à l'endroit où vous désirez intégrer la carte:</p>
+    
+        <pre><code> &lt;div id="map"&gt;&lt;/div&gt;
+        </code></pre>
+        </li>
+        <li>
+            <p>Assurez-vous que le conteneur cartographique possède bien un style associé à la hauteur de l'élément, par exemple en l'intégrant à un feuille de style ou directement dans la balise ou dans l'entête de la page Web:</p>
+    
+            <pre><code class="css">#map { height: 140px; }</code></pre>
+        </li>
+    </ul>
+
+    <p>Et voilà! Vous êtes maintenant prêt à initialiser votre carte et accomplir des actions!</p>
+    <p>Référez-vous à la <a href="http://leafletjs.com/reference.html">documentation</a> de Leaflef pour en savoir plus sur les nombreuses possibilitées de cette librairie!</p>
+
+    <hr>
+    <h2>Fonds cartographiques</h2>
+    <p>Vous pouvez personnaliser vos fonds cartographiques en utilisant les services d'un distributeurs de tuiles cartographiques ou en créant vos propre fonds de cartes personnalisés via <a href="http://mapbox.com/tilemill/">TileMill</a>.</p>
+
+    <p>Par exemple, voici le fond de carte "Toner Lite" des Studios Stamen</p>
+    <div id="mapLite" class="map"></div>
+    <br>
+    <ul>
+        <li>
+            <p>Ajouter un élément <code>div</code> avec un identifiant unique <code>id</code> à l'endroit où vous désirez intégrer la carte:</p>
+
+            <pre><code>&lt;div id="mapLite" class="map" style="height: 180px"&gt;&lt;/div&gt;</code></pre>
+        </li>
+
+        <li>
+            <p>Créer une couche cartographique avec L.tileLayer et ajouter le tout à la carte via carte l'option layers</p>
+    <pre>
+<code>var stamenAttribution ='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.',
+stamen_lite_url = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png';
+
+lite = L.tileLayer(stamen_lite_url, {attribution: stamenAttribution});
+
+var mapLite= L.map('mapLite', {
+    center: [45.528293,-73.59246],
+    zoom: 10,
+    layers: [lite]
+});</code>
+    </pre>
+        </li>
+    </ul>
+<hr>
+    <h3>Gestionnaire de couches cartographiques</h3>
+    <div id="mapCtrl" class="map" style="height: 220px"></div>
+    <br>
+    <p>Via l'utilisation du contrôleur de gestion de couches L.control.layers:</p><pre><code>var mapCtrl = L.map('mapCtrl', {
+    center: LATLNG,
+    zoom: 10,
+    layers: [osm, hybrid, lines, back, lite]
+});
+
+var baseLayers = {
+    "Open Street Map": osm,
+    "Toner Hybrid": hybrid,
+    "Toner Lines": lines,
+    "Toner Background": back,
+    "Toner Lite": lite
+};
+
+<strong>L.control.layers(baseLayers).addTo(mapCtrl)</strong>;</code></pre>
+<hr>
+    <h3>Carte statique</h3>
+    <div id="mapStatic" class="map"></div>
+    <br>
+    <p>Via l'option zoomControl:false et la désactivation des méthodes doubleClickZoom, etc.:</p><pre><code>// mapStatic ==================
+    var mapStatic= L.map('mapStatic', {
+    center: LATLNG,
+    zoom: 10,
+    <strong>zoomControl:false</strong>
+    });
+
+    var  staticLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {styleId: 46561, attribution: STAMEN_ATTR});
+
+    <strong>mapStatic.doubleClickZoom.disable();
+    mapStatic.dragging.disable();
+    mapStatic.scrollWheelZoom.disable();
+    mapStatic.touchZoom.disable();</strong>
+
+    mapStatic.addLayer(staticLayer);</code></pre>
+<hr>
+    <h3>Afficher des régions</h3>
+    <div id="mapRegions" class="map" style="height: 300px"></div>
+    <br>
+    <p>Ajout d'une région en provenance de l'API LMTL.</p>
+    <p>Nous commençons par créer une fonction <strong>onEachFeature</strong> qui se chargera de lire les features geoJson. Cette fonction ajoutera un Popup à notre couche carto qui sera alimenté par les propriétés du Feature sélectionné.</p>
+<pre><code>var mapRegions= L.map('mapRegions', {
+    center: [45.50,-73.60],
+    zoom: 13
+});
+
+var  regionBaseLayer = L.tileLayer(STAMEN_TONER_HYBRID_URL, {attribution: STAMEN_ATTR}).addTo(mapRegions);
+
+<strong>onEachFeature</strong> = function(feature, layer) {
+    if (feature.properties && feature.properties.officiel) {
+        var popupContent = "&lt;p&gt;("+feature.id+") " + feature.geometry.type + ", "+feature.properties.officiel+"&lt;/p&gt;";
+        layer.bindPopup(popupContent);
+    }
+}</code></pre>
+
+    <p>Ensuite, on ajoute une couche geoJson à notre carte en l'enregistrant sur la fonction déclarée ci-haut. Nous utilisons ici <a href="http://api.jquery.com/jQuery.get/">jQuery.get</a> pour communiquer avec le serveru LMTL.</p>
+<pre><code>$.get('../collab_api/regions/3', function(data) {
+    $('.result').html(data);
+    $("#regionGeoJson").text($.toJSON(data.results.geoJson));
+
+    L.geoJson(data.results.geoJson.features[0], {
+        <strong>onEachFeature</strong>: onEachFeature
+    }).addTo(mapRegions);
+});</code></pre>
+
+    <p>Résultat de la requête:</p>
+    <pre style="height: 100px;overflow-y: auto;"><code id="regionGeoJson"></code></pre>
+    <hr>
+
+    <h3>Visualisation de lieux</h3>
+    <div id="mapPlaces" class="map" style="height: 220px"></div>
+    <br>
+    <p>Alimentation en lieux à partir de l'API LMTL [datasets/96/places]. Très similaire à l'exemple précédent avec quelques petites <strong>différences</strong> en fonction du type de données.</p>
+    <pre><code>var mapPlaces= L.map('mapPlaces', {
+    center: [45.50,-73.60],
+    zoom: 13
+});
+
+var  placesBaseLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {attribution: STAMEN_ATTR}).addTo(mapPlaces);
+
+<strong>onEachPlace</strong> = function(feature, layer) {
+    if (feature.properties && feature.properties.<strong>name</strong>) {
+        var popupContent = "&lt;p&gt;("+feature.id+") " + feature.geometry.type + ", "+feature.properties.<strong>name</strong>+"&lt;/p&gt;";
+        layer.bindPopup(popupContent);
+    }
+}
+
+$.get(<strong>'../collab_api/datasets/96/places'</strong>, function(data) {
+    L.geoJson(data.results.geoJson.features, {
+        onEachFeature: <strong>onEachPlace</strong>
+    }).addTo(mapPlaces);
+});</code></pre>
+    <hr>
+
+    <h3>Utilisation de marqueurs personnalisés</h3>
+    <div id="mapCategories" class="map" style="height: 220px"></div>
+    <br>
+    <p>Marqueurs personnalisés en provenance de l'API LMTL [categories] et alimentation en lieux à partir de [datasets/96/places].
+        Introduction de l'action <strong>pointToLayer</strong> de la couche geoJson qui ajoute une itération sur tous les features et qui permet d'ajouter un marqueur personalisé.
+    Également l'ocasion d'utiliser le constructeur de marqueur <strong>L.marker</strong>.</p>
+    <pre><code>var mapCategories= L.map('mapCategories', {
+    center: [45.50,-73.60],
+    zoom: 13
+});
+
+var  mapCategoriesBaseLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {attribution: STAMEN_ATTR}).addTo(mapCategories);
+
+$.get('../collab_api/categories', function(data) {
+    categories = data.results;
+
+    $.get('../collab_api/datasets/96/places', function(data) {
+        L.geoJson(data.results.geoJson.features, {
+
+            <strong>pointToLayer</strong>: function (feature, latlng) {
+                if(typeof(categories[feature.properties.primary_category_id]) == 'undefined'){
+                    return  L.marker(latlng,{});
+                }
+                return <strong>L.marker</strong>(latlng, {icon: L.icon({
+                    iconUrl: "../collab_api/public/img/icons/"+categories[feature.properties.primary_category_id].i,
+                    iconSize: [32, 37],
+                    iconAnchor: [16, 37],
+                    popupAnchor: [0, -28]
+                    })
+                });
+            },
+
+            onEachFeature: onEachPlace
+        }).addTo(mapCategories);
+    });
+});</code></pre>
+    <hr>
+
+
+    <h3>Within</h3>
+    <div id="mapPlacesWithinRegion" class="map" style="height: 220px"></div>
+    <br>
+    <p>Lieux en provenance de l'API LMTL [place/within/3]. Utilisation de deux couches dynamiques (lieux & région).</p>
+<pre><code>var mapPlacesWithinRegion= L.map('mapPlacesWithinRegion', {
+    center: [45.50,-73.60],
+    zoom: 13
+});
+
+var  withinBaseLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {attribution: STAMEN_ATTR}).addTo(mapPlacesWithinRegion);
+
+$.get('../collab_api/regions/3', function(data) {
+    L.geoJson(data.results.geoJson.features, {
+        onEachFeature: onEachFeature
+    }).addTo(mapPlacesWithinRegion);
+});
+
+$.get('../collab_api/places/within/3', function(data) {
+    L.geoJson(data.results.geoJson.features, {
+        onEachFeature: onEachPlace
+    }).addTo(mapPlacesWithinRegion);
+});</code></pre>
+    <hr>
+
+<script>
+
+    // map ==================
+    var map = L.map('map').setView(LATLNG, 13);
+    L.tileLayer(OSM_URL, {attribution: OSM_ATTR, styleId: 997}).addTo(map);
+
+    // ===================================
+
+    STAMEN_ATTR ='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.';
+    STAMEN_TONER_HYBRID_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.png';
+    STAMEN_TONER_LINES_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}.png';
+    STAMEN_TONER_BACKGROUND_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.png';
+    STAMEN_TONER_LITE_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png';
+
+    var osm   = L.tileLayer(OSM_URL, {styleId: 22677, attribution: OSM_ATTR}),
+        hybrid  = L.tileLayer(STAMEN_TONER_HYBRID_URL, {styleId: 999,   attribution: STAMEN_ATTR}),
+        lines = L.tileLayer(STAMEN_TONER_LINES_URL, {styleId: 46561, attribution: STAMEN_ATTR}),
+        back  = L.tileLayer(STAMEN_TONER_BACKGROUND_URL, {styleId: 999,   attribution: STAMEN_ATTR}),
+        lite = L.tileLayer(STAMEN_TONER_LITE_URL, {styleId: 46561, attribution: STAMEN_ATTR}),
+        categoriea = [];
+
+
+    // mapLite ==================
+    var mapLite= L.map('mapLite', {
+        center: [45.528293,-73.59246],
+        zoom: 10,
+        layers: [lite]
+    });
+
+    // mapCtrl ==================
+    var mapCtrl = L.map('mapCtrl', {
+        center: LATLNG,
+        zoom: 10,
+        layers: [osm, hybrid, lines, back, lite]
+    });
+
+    var baseLayers = {
+        "Open Street Map": osm,
+        "Toner Hybrid": hybrid,
+        "Toner Lines": lines,
+        "Toner Background": back,
+        "Toner Lite": lite
+    };
+
+    L.control.layers(baseLayers).addTo(mapCtrl);
+    // ===================================
+
+    // mapStatic ==================
+    var mapStatic= L.map('mapStatic', {
+        center: LATLNG,
+        zoom: 10,
+        zoomControl:false
+    });
+
+    var  staticLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {styleId: 46561, attribution: STAMEN_ATTR});
+
+    mapStatic.doubleClickZoom.disable();
+    mapStatic.dragging.disable();
+    mapStatic.scrollWheelZoom.disable();
+    mapStatic.touchZoom.disable();
+
+    mapStatic.addLayer(staticLayer);
+
+    // mapRegions ==================
+    var mapRegions= L.map('mapRegions', {
+        center: [45.50,-73.60],
+        zoom: 13
+    });
+
+    var  regionBaseLayer = L.tileLayer(STAMEN_TONER_HYBRID_URL, {attribution: STAMEN_ATTR}).addTo(mapRegions);
+
+     onEachFeature = function(feature, layer) {
+        if (feature.properties && feature.properties.officiel) {
+            var popupContent = "<p>("+feature.id+") " + feature.geometry.type + ", "+feature.properties.officiel+"</p>";
+            layer.bindPopup(popupContent);
+        }
+     }
+
+    $.get('../collab_api/regions/3', function(data) {
+        $('.result').html(data);
+        $("#regionGeoJson").text($.toJSON(data.results.geoJson));
+
+        L.geoJson(data.results.geoJson.features[0], {
+            onEachFeature: onEachFeature
+        }).addTo(mapRegions);
+    });
+
+    // mapPlaces ==================
+    var mapPlaces= L.map('mapPlaces', {
+        center: [45.50,-73.60],
+        zoom: 13
+    });
+
+    var  placesBaseLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {attribution: STAMEN_ATTR}).addTo(mapPlaces);
+
+    onEachPlace = function(feature, layer) {
+        if (feature.properties && feature.properties.name) {
+            var popupContent = "<p>("+feature.id+") " + feature.geometry.type + ", "+feature.properties.name+"</p>";
+            layer.bindPopup(popupContent);
+        }
+    }
+
+    $.get('../collab_api/datasets/96/places', function(data) {
+        L.geoJson(data.results.geoJson.features, {
+            onEachFeature: onEachPlace
+        }).addTo(mapPlaces);
+    });
+
+    // mapCategories ==================
+    var mapCategories= L.map('mapCategories', {
+        center: [45.50,-73.60],
+        zoom: 13
+    });
+
+    var  mapCategoriesBaseLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {attribution: STAMEN_ATTR}).addTo(mapCategories);
+
+    $.get('../collab_api/categories', function(data) {
+        categories = data.results;
+
+        $.get('../collab_api/datasets/96/places', function(data) {
+            L.geoJson(data.results.geoJson.features, {
+
+                pointToLayer: function (feature, latlng) {
+                    if(typeof(categories[feature.properties.primary_category_id]) == 'undefined'){
+                        return  L.marker(latlng,{});
+                    }
+                    return L.marker(latlng, {icon: L.icon({
+                        iconUrl: "../collab_api/public/img/icons/"+categories[feature.properties.primary_category_id].i,
+                        iconSize: [32, 37],
+                        iconAnchor: [16, 37],
+                        popupAnchor: [0, -28]
+                    })});
+                },
+
+                onEachFeature: onEachPlace
+            }).addTo(mapCategories);
+        });
+    });
+
+    // mapPlacesWithinRegion ==================
+    var mapPlacesWithinRegion= L.map('mapPlacesWithinRegion', {
+        center: [45.50,-73.60],
+        zoom: 13
+    });
+
+    var  withinBaseLayer = L.tileLayer(STAMEN_TONER_LITE_URL, {attribution: STAMEN_ATTR}).addTo(mapPlacesWithinRegion);
+
+    $.get('../collab_api/regions/3', function(data) {
+        L.geoJson(data.results.geoJson.features, {
+            onEachFeature: onEachFeature
+        }).addTo(mapPlacesWithinRegion);
+    });
+
+    $.get('../collab_api/places/within/3', function(data) {
+        L.geoJson(data.results.geoJson.features, {
+            onEachFeature: onEachPlace
+        }).addTo(mapPlacesWithinRegion);
+    });
+
+
+</script>
+
+
+
+    
+    <div class="footer">
+        <hr />
+        <p class="quiet">&copy; 2013&ndash;2014 STEFLEF, &copy; 2010&ndash;2013 <a href="http://agafonkin.com/en">Vladimir Agafonkin</a>, 2010&ndash;2011 <a href="http://cloudmade.com">CloudMade</a>. Maps &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors.</p>
+    </div>
+</div>
+
+</body>
+</html>
