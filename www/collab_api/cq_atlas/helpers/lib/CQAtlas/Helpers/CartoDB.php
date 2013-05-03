@@ -459,6 +459,32 @@ class CartoDB
         return $Formatter->getOutput();
     }
 
+    public function getPlacesWithin($regionId)
+    {
+        $tableName = 'places';
+
+        # Build Queries
+        $fields = array(
+            'places.id',
+            'places.name',
+            'places.description',
+            'places.primary_category_id',
+            'ST_AsGeoJSON(places.the_geom) AS the_geom'
+        );
+
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName,poly WHERE ST_Within(places.the_geom,poly.the_geom) AND poly.id = $regionId ORDER BY places.updated_at DESC;";
+
+        $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+        $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+
+        if($response->getStatusCode()!==200){
+            throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
+        }
+
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+        return $Formatter->getOutput();
+    }
+
     public function getRegions()
     {
         $tableName = 'poly';
@@ -536,7 +562,9 @@ class CartoDB
         if($response->getStatusCode()!==200){
             throw new \Exception('CartoDb::getPlace status '.$response->getStatusCode());
         }
-
+//        print_r( $response->json());
+//        echo $response->getBody();
+//        exit;
         $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
         return $Formatter->getOutput();
     }
