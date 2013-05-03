@@ -260,6 +260,7 @@ class ApiGeoJsonFormatter
 
             $feature = array(
                 'id' => '',
+                'type'=>'Feature',
                 'geometry' => array(
                     'type' => 'Point',
                     'coordinates' => array()
