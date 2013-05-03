@@ -50,10 +50,9 @@
                                 <dd>
                                     <small>Dernière mise à jour {{dataset.properties.updated_at | date:'MM/dd/yyyy @ h:mma'}}</small>
                                 </dd>
-                                <dd ng-show="(dataset.count > 0)"><span
-                                        class="bold">{{dataset.properties.count | number}} lieux</span></dd>
-                                <dd ng-show="(dataset.count < 1)"><span class="bold">Aucun lieu pour l'instant</span>
-                                </dd>
+                                <dd ng-show="(dataset.properties.count > 0)"><span class="bold">{{dataset.properties.count | number}} lieux</span></dd>
+                                <dd ng-show="(dataset.properties.count < 1)"><span class="bold">Aucun lieu pour l'instant</span></dd>
+                                <dd>Licence: <span class="bold">{{dataset.properties.licence}}</span></dd>
                                 <dd class="c-desc">
 
                                     {{dataset.properties.description}}
