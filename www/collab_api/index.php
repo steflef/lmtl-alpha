@@ -288,6 +288,33 @@ $app->get("/places/:id", $apiCache($app, $di), function ($placeId) use ($app, $d
 });
 // ***
 
+// ### API -  */places/:id*
+// ### Get a Place  (GET)
+// #### *JSON* - *STATIC CACHE*
+$app->get("/places/within/:id", $apiCache($app, $di), function ($id) use ($app, $di) {
+
+    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
+
+    try{
+        $placeDetails = $CartoDB->getPlacesWithin($id);
+
+    }catch (\Exception $e){
+        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
+        $Response->show();
+        $app->stop();
+    }
+
+    $Response = new \CQAtlas\Helpers\Response($app->response());
+    $Response->addContent(array('timestamp'=>time(),'results'=>$placeDetails));
+
+    // #### Cache the Response
+    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
+    $Cache->save($Response->toJson());
+
+    $Response->show();
+});
+// ***
+
 // ### API -  */places/:id/near*
 // ### Get Places Near a Place (GET)
 // #### *Print JSON* - *STATIC CACHE*
