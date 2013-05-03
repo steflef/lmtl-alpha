@@ -794,6 +794,10 @@ angular.module('appMain', ['ngSanitize'])
             },
             showDetails: function(){
                 this.states.slider = "details";
+                if(arguments.length == 1){
+                    console.log(arguments[0]);
+                    self.place.get(arguments[0]);
+                }
             },
             toStepTwo: function () {
                 console.log("+++ toStepTwo +++");
