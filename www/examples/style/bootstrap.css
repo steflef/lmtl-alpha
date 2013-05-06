@@ -152,7 +152,7 @@ textarea {
   overflow: auto;
   vertical-align: top;
 }
-@media print {
+/*@media print {
   * {
     text-shadow: none !important;
     color: #000 !important;
@@ -202,7 +202,7 @@ textarea {
   h3 {
     page-break-after: avoid;
   }
-}
+}*/
 body {
   margin: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -1950,7 +1950,7 @@ table th[class*="span"],
   *margin-right: .3em;
   line-height: 14px;
   vertical-align: text-top;
-  background-image: url("../img/glyphicons-halflings.png");
+  background-image: url("./img/glyphicons-halflings.png");
   background-position: 14px 14px;
   background-repeat: no-repeat;
   margin-top: 1px;
@@ -6337,4 +6337,233 @@ a.pseudo-btn:hover .label {
 .newLocation input[type="text"],
 .newLocation textarea {
   width: 95%;
+}
+
+.regions ul{
+    list-style: none;
+    margin: 0;
+}
+
+
+@media screen, projection {
+    .noDisplay {
+        display: none;
+    }
+    header {
+        display: none;
+    }
+    .round {
+        background-color: #e6e6e6;
+        -webkit-border-radius: 25px;
+        -moz-border-radius: 25px;
+        border-radius: 25px;
+        padding: 1px 8px;
+    }
+    .lbl {
+        font-size: 11.844px;
+        font-weight: bold;
+        line-height: 14px;
+        color: #ffffff;
+        vertical-align: baseline;
+        white-space: nowrap;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+        background-color: #999999;
+        padding: 1px 4px 2px;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+        text-shadow: none;
+    }
+    .lbl-important {
+        background-color: #b94a48;
+    }
+    .lbl-important[href] {
+        background-color: #953b39;
+    }
+    .lbl-warning {
+        background-color: #f89406;
+    }
+    .lbl-warning[href] {
+        background-color: #c67605;
+    }
+    .lbl-success {
+        background-color: #468847;
+    }
+    .lbl-success[href] {
+        background-color: #356635;
+    }
+    .lbl-info {
+        background-color: #3a87ad;
+    }
+    .lbl-info[href] {
+        background-color: #2d6987;
+    }
+    .lbl-inverse {
+        background-color: #333333;
+    }
+    .lbl-inverse[href] {
+        background-color: #1a1a1a;
+    }
+    .label-dt,
+    .label-dt {
+        background-color: #fff;
+        color: #333;
+    }
+    .label-id {
+        background-color: #fff;
+        color: #333;
+        float: right;
+    }
+    .l-dt {
+        background-color: #fff;
+        color: #333;
+        background-color: transparent;
+    }
+    .l-id {
+        background-color: #fff;
+        color: #333;
+        float: right;
+        background-color: transparent;
+        margin-right: 20px;
+    }
+    .i-icon {
+        border: none;
+        display: inline-block;
+        height: 14px;
+        width: 14px;
+    }
+
+    footer {
+        position: fixed;
+        bottom: 0;
+        left: 20px;
+        width: 100%;
+        height: 30px;
+        margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: 200;
+        line-height: 30px;
+    }
+    .navbar {
+        -webkit-transform: translate3d(0, 0, 0px);
+        z-index: 20;
+    }
+    .navbar .active {
+        font-weight: 600;
+    }
+    .navbar a.brand {
+        font-weight: 400;
+    }
+    .map{
+        border:1px solid #ccc;
+        height: 180px;
+    }
+}
+@media print {
+    * {
+        color: black !important;
+        text-shadow: none !important;
+        filter: none !important;
+        -ms-filter: none !important;
+    }
+    /* Black prints faster: h5bp.com/s */
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+    .ir a:after,
+    a[href^="javascript:"]:after,
+    a[href^="#"]:after {
+        content: "";
+    }
+    /* Don't show links for images, or javascript/internal links */
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+    thead {
+        display: table-header-group;
+    }
+    /* h5bp.com/t */
+    tr,
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+    .label {
+        background: transparent;
+    }
+    @page  {
+        margin: 0.28in;
+    }
+    html {
+        width: 8.5in;
+    }
+    body {
+        font: 9pt/1.5 Arial, sans-serif;
+        /* Roughly 12px font */
+
+        line-height: 1.3;
+        width: 8.5in;
+    }
+    .navbar,
+    .nav,
+    noscript,
+    .to-top,
+    .innerLinks,
+    .histo-link,
+    .outils,
+    .media,
+    .meteo,
+    .leaflet-control,
+    .icon-ok-sign,
+    select{
+        display: none;
+    }
+    .i-icon {
+        border: none;
+        display: inline-block;
+        height: 14px;
+        overflow: none;
+        width: 14px;
+    }
+
+    header {
+        border-bottom: 4px solid #ccc;
+        border-top: 4px solid #ccc;
+        color: #666;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 14px;
+        width: 100%;
+    }
+    header span {
+        float: right;
+    }
+    .mainWrap {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .map{
+
+        border: 2px solid #666;
+        height: 420px;
+        width:100%;
+    }
 }
