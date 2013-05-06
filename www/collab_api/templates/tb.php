@@ -76,7 +76,7 @@
     <section>
         <div class="location-toolbar">
             <ul>
-                <li style="float: right;">{{datasets[0].name}}</li>
+                <li style="float: right;">{{datasets.getSelected().properties.name}}</li>
                 <li><a href="#" onclick="return false;" ng-click="ui.showDatasets()"><i class="icon-th-large icon-white"></i> Menu</a></li>
                 <li><a href="#" onclick="return false;" ng-click="ui.showForm()"><i class="icon-plus icon-white"></i> Ajouter un lieu</a></li>
                 <li ng-show="isMobile.any()"><a href="#" onclick="return false;" ng-click="geoLocation()"><i class="icon-map-marker icon-white"></i> Ma localisation</a></li>
