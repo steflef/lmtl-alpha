@@ -111,6 +111,7 @@
                     <div ng-show="(uData.features.length>0)">
                         <div class="hero-unit hero-unit-small-margin">
                             <h4>Complétez l'activation du jeu de données</h4>
+                            <button class="btn btn-mini" ng-click="viewScope()">scope</button>
                             <p>Utilisez les onglets pour naviguer et compléter les métadonnées pour ensuite procéder à la publication.</p>
                             <small>Consultez l'onglet publication pour les droits et licences attribuées aux documents.</small>
                         </div>
@@ -232,7 +233,7 @@
                                         style="width:350px;"
                                         ng-model="cat.hash"
                                         ng-options="d.fr group by d.group for d in cat.options"
-                                        chosen-rao>
+                                        chosen-cat>
                                 </select>
                             </div>
                             <span class="help-inline">Max. de 3 catégories</span>
