@@ -160,6 +160,28 @@ class CartoDB
         'categories'=>array(
             'fields'=>array(
                 'id' => array('type' =>'number'),
+                'parent_id' => array('type' =>'number'),
+                'parent_fr'   =>array('type' =>'string'),
+                'en'   =>array('type' =>'string'),
+                'fr'   =>array('type' =>'string'),
+                'icon' => array('type' =>'string'),
+                'updated_at' => array('type' =>'string')
+            ),
+            'output_tmpl'=>array(
+                'id'        => 'id',
+                'group' => 'parent_fr',
+                'fr'        => 'fr',
+                'i'      => 'icon'
+            ),
+
+
+            'output_exp'=>array(
+            )
+        ),
+
+        'regions'=>array(
+            'fields'=>array(
+                'id' => array('type' =>'number'),
                 'acronyme'      => array('type' =>'string'),
                 'nom_abrg'  => array('type' =>'string'),
                 'officiel' => array('type' =>'string'),
@@ -173,27 +195,6 @@ class CartoDB
                 'officiel' => 'officiel',
                 'the_geom'=> 'the_geom',
                 'updated_at' => 'updated_at'
-            ),
-
-            'output_exp'=>array(
-            )
-        ),
-
-        'regions'=>array(
-            'fields'=>array(
-                'id' => array('type' =>'number'),
-                'parent_id' => array('type' =>'number'),
-                'parent_fr'   =>array('type' =>'string'),
-                'en'   =>array('type' =>'string'),
-                'fr'   =>array('type' =>'string'),
-                'icon' => array('type' =>'string'),
-                'updated_at' => array('type' =>'string')
-            ),
-            'output_tmpl'=>array(
-                'id'        => 'id',
-                'group' => 'parent_fr',
-                'fr'        => 'fr',
-                'i'      => 'icon'
             ),
 
             'output_exp'=>array(
