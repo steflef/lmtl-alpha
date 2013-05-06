@@ -181,8 +181,8 @@ var baseLayers = {
 var  regionBaseLayer = L.tileLayer(STAMEN_TONER_HYBRID_URL, {attribution: STAMEN_ATTR}).addTo(mapRegions);
 
 <strong>onEachFeature</strong> = function(feature, layer) {
-    if (feature.properties && feature.properties.officiel) {
-        var popupContent = "&lt;p&gt;("+feature.id+") " + feature.geometry.type + ", "+feature.properties.officiel+"&lt;/p&gt;";
+    if (feature.properties && feature.properties.nom) {
+        var popupContent = "&lt;p&gt;("+feature.id+") " + feature.geometry.type + ", "+feature.properties.nom+"&lt;/p&gt;";
         layer.bindPopup(popupContent);
     }
 }</code></pre>
@@ -361,8 +361,8 @@ $.get('../collab_api/places/within/3', function(data) {
     var  regionBaseLayer = L.tileLayer(STAMEN_TONER_HYBRID_URL, {attribution: STAMEN_ATTR}).addTo(mapRegions);
 
      onEachFeature = function(feature, layer) {
-        if (feature.properties && feature.properties.officiel) {
-            var popupContent = "<p>("+feature.id+") " + feature.geometry.type + ", "+feature.properties.officiel+"</p>";
+        if (feature.properties && feature.properties.nom) {
+            var popupContent = "<p>("+feature.id+") " + feature.geometry.type + ", "+feature.properties.nom+"</p>";
             layer.bindPopup(popupContent);
         }
      }
@@ -450,8 +450,6 @@ $.get('../collab_api/places/within/3', function(data) {
 
 
 </script>
-
-
 
     
     <div class="footer">
