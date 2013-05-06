@@ -35,10 +35,10 @@ angular.module('appMain', ['ngSanitize','ngUpload'])
         }
     })
 
-    .directive('chosenRao', function () {
+    .directive('chosenCat', function () {
         var linker = function(scope, element) {
             scope.$watch('cat.options', function(){
-                //console.log("Options Watcher");
+                console.log("Options Watcher");
                 if(scope.cat.hash.lenght !== 0 ){
                     var codesList = _.pluck(scope.cat.options, 'id');
                     var indexes = [];
@@ -572,13 +572,17 @@ angular.module('appMain', ['ngSanitize','ngUpload'])
         $scope.geocodingBtn = {isDisabled:false};
 
         $scope.cat = {
-            "hash":[],
-            "options" : []
+            obj : {},
+            hash:[],
+            options : []
         };
 
         $http.get("./categories").
             success(function(data) {
-                $scope.cat.options = data.results;
+                //$scope.cat.options = data.results;
+
+                $scope.cat.obj = data.results;
+                $scope.cat.options = _.values($scope.cat.obj);
             }).
             error(function(data, status) {
                 console.log(status);
