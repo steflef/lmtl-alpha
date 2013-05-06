@@ -18,12 +18,13 @@ class CountFormatter extends AbstractFormatter
     {
         parent::__construct($source,$CartoDB);
         $this->_row = $row;
-        return $this->getOutput();
+        //return $row['total'];
+        //return $this->getOutput();
     }
 
     public function getOutput(){
         //return $this->_row;
-
-        return $this->CartoDB->getPlacesCount($this->_row['id']);
+        return $this->_row['total'];
+       // return $this->CartoDB->getPlacesCount($this->_row['id']);
     }
 }

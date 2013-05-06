@@ -10,15 +10,17 @@ class BboxFormatter extends AbstractFormatter
     {
         parent::__construct($source,$CartoDB);
         $this->_row = $row;
-        return $this->getOutput();
+        //return $this->getOutput();
     }
 
     public function getOutput(){
 
         //$output = "Rock the Box!";
+//
+//        $output = $this->CartoDB->getExtent($this->_row['id']);
+//
+//        return $output;
 
-        $output = $this->CartoDB->getExtent($this->_row['id']);
-
-        return $output;
+        return $this->_row['bbox'];
     }
 }

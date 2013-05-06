@@ -177,3 +177,8 @@ CREATE TABLE collections
 
   CONSTRAINT collections_pkey PRIMARY KEY ( _cartodb_id )
 );
+
+-- DATASETS
+SELECT datasets.*, sub_1.bbox, sub_2.total  FROM datasets
+LEFT JOIN (SELECT dataset_id, ST_AsGeoJson(ST_Extent(the_geom)) AS bbox FROM places GROUP BY dataset_id) sub_1 ON datasets.id = sub_1.dataset_id
+LEFT JOIN (SELECT dataset_id, COUNT(id) AS total FROM places GROUP BY dataset_id) sub_2  ON datasets.id = sub_2.dataset_id;

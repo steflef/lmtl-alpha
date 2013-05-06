@@ -140,11 +140,11 @@ class CartoDB
                 'attributes' => array(
                     'func' => 'Json2array',
                     'dependency' => 'attributes'
-                ),
-                'count' => array(
-                    'func' => 'Count',
-                    'dependency' => 'none'
-                )
+                )//,
+//                'count' => array(
+//                    'func' => 'Count',
+//                    'dependency' => 'none'
+//                )
             ),
             'virtual_fields'=>array(
                 'the_geom' => array(
@@ -179,7 +179,7 @@ class CartoDB
             )
         ),
 
-        'poly'=>array(
+        'regions'=>array(
             'fields'=>array(
                 'id' => array('type' =>'number'),
                 'parent_id' => array('type' =>'number'),
@@ -472,7 +472,7 @@ class CartoDB
             'ST_AsGeoJSON(places.the_geom) AS the_geom'
         );
 
-        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName,poly WHERE ST_Within(places.the_geom,poly.the_geom) AND poly.id = $regionId ORDER BY places.updated_at DESC;";
+        $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName,regions WHERE ST_Within(places.the_geom,regions.the_geom) AND regions.id = $regionId ORDER BY places.updated_at DESC;";
 
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
         $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
@@ -487,14 +487,14 @@ class CartoDB
 
     public function getRegions()
     {
-        $tableName = 'poly';
+        $tableName = 'regions';
 
         # Build Queries
         $fields = array(
             'id',
-            'acronyme',
-            'nom_abrg',
-            'officiel',
+            'nom',
+            't_decoup',
+            'id_ref',
             'ST_AsGeoJSON(the_geom) AS the_geom'
         );
 
@@ -514,14 +514,14 @@ class CartoDB
 
     public function getRegionsIn($ids)
     {
-        $tableName = 'poly';
+        $tableName = 'regions';
 
         # Build Queries
         $fields = array(
             'id',
-            'acronyme',
-            'nom_abrg',
-            'officiel',
+            'nom',
+            't_decoup',
+            'id_ref',
             'ST_AsGeoJSON(the_geom) AS the_geom'
         );
 
@@ -543,14 +543,14 @@ class CartoDB
 
     public function getRegion($id)
     {
-        $tableName = 'poly';
+        $tableName = 'regions';
 
         # Build Queries
         $fields = array(
             'id',
-            'acronyme',
-            'nom_abrg',
-            'officiel',
+            'nom',
+            't_decoup',
+            'id_ref',
             'ST_AsGeoJSON(the_geom) AS the_geom'
         );
 
@@ -571,14 +571,14 @@ class CartoDB
 
     public function getRegionsList()
     {
-        $tableName = 'poly';
+        $tableName = 'regions';
 
         # Build Queries
         $fields = array(
             'id',
-            'acronyme',
-            'nom_abrg',
-            'officiel'
+            'nom',
+            't_decoup',
+            'id_ref',
         );
 
         $sqlStatement = "SELECT ".implode(',',$fields)." FROM $tableName ORDER BY id ASC;";
@@ -614,6 +614,34 @@ class CartoDB
         }
 
         $Formatter = new \CQAtlas\Helpers\ApiJsonFormatter($response->json(), $this->getSchema($tableName), $this);
+        return $Formatter->getOutput();
+    }
+
+    public function getDatasets()
+    {
+        $tableName = 'datasets';
+
+        $sqlStatement = "SELECT datasets.*, sub_1.bbox, sub_2.total  FROM datasets
+LEFT JOIN (SELECT dataset_id, ST_AsGeoJson(ST_Extent(the_geom)) AS bbox FROM places GROUP BY dataset_id) sub_1 ON datasets.id = sub_1.dataset_id
+LEFT JOIN (SELECT dataset_id, COUNT(id) AS total FROM places GROUP BY dataset_id) sub_2  ON datasets.id = sub_2.dataset_id ORDER BY datasets.updated_at DESC;";
+
+        $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+        //$response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
+        $request = $client->post('',null, array(
+            'q' => $sqlStatement,
+            'api_key' => $this->_di['cartodb_api_key']
+        ));
+
+        $response = $request->send();
+//        echo '<pre><code>';
+//        print_r($response->json());
+//        echo '</code></pre>';
+//        exit;
+        if($response->getStatusCode()!==200){
+            throw new \Exception('CartoDb::getDatasets status '.$response->getStatusCode());
+        }
+
+        $Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->getSchema($tableName), $this);
         return $Formatter->getOutput();
     }
 }
