@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exemple #2</title>
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../docs/images/favicon.png" />
+
+    <!-- Twitter Bootstrap -->
+    <link rel="stylesheet" href="./style/bootstrap.css">
+    <link rel="stylesheet" type="text/css" media="print" href="./style/bootstrap.css">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="./js/leaflet/0.5.1/leaflet.css">
+    <!--[if lte IE 8]><link rel="stylesheet" href="./js/leaflet/0.5.1/leaflet.ie.css" /><![endif]-->
+    <script src="./js/leaflet/0.5.1/leaflet-src.js"></script>
+
+    <!-- jQuery -->
+    <script src="./js/jquery/1.8.3/jquery.min.js"></script>
+    <script src="./js/jquery/jquery.json-2.4.min.js"></script>
+
+    <style type="text/css">
+
+    </style>
+
+
+    <script>
+        CM_ATTR = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://cloudmade.com">CloudMade</a>';
+        CM_URL = 'http://{s}.tile.cloudmade.com/d4fc77ea4a63471cab2423e66626cbb6/{styleId}/256/{z}/{x}/{y}.png';
+
+        OSM_URL = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        OSM_ATTR = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+        STAMEN_ATTR ='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.';
+        STAMEN_TONER_HYBRID_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.png';
+        STAMEN_TONER_LINES_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}.png';
+        STAMEN_TONER_BACKGROUND_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.png';
+        STAMEN_TONER_LITE_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png';
+
+        LATLNG = [45.528293,-73.59246];
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>LMTL</h1>
+    <h3>Intégration des composantes cartographiques dans le cadre du projet LMTL.
+        </h3>
+    <h2>Intégration des régions</h2>
+    <p>Exemple démontrant la sélection dynamique en se basant sur les régions. D'abord au moyen d'un menu déroulant et ensuite à l'aide d'une liste.
+        Le style est également adapté à une impression papier.
+
+    </p>
+<p>Le tout servi avec un style <a href="http://twitter.github.io/bootstrap/">Twitter Bootstrap</a>.</p>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <a class="brand" href="#">Sélection via menu déroulant: </a>
+
+            <form class="navbar-form pull-right">
+                <select class="span7 " id="selRegions" ></select>
+            </form>
+
+        </div>
+    </div>
+
+
+    <div class="location-toolbar" style="position: relative;top:0;left:0;">
+        <ul>
+            <li style="float:right;"><a href="#" onclick="window.print(); return false;"><i class="icon icon-white icon-print"></i></a></li>
+        </ul>
+    </div>
+
+    <div id="mapFull" class="map" style="height: 420px"></div>
+
+    <br>
+    <div class="regions">
+        <div class="row"></div>
+    </div>
+    <hr>
+    <p>Les intéractions sont programmées en javascript à l'aide de la librairie jQuery.</p>
+    <hr>
+
+<script>
+
+
+    // ===================================
+
+    STAMEN_ATTR ='Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.';
+    STAMEN_TONER_HYBRID_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}.png';
+    STAMEN_TONER_LINES_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}.png';
+    STAMEN_TONER_BACKGROUND_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.png';
+    STAMEN_TONER_LITE_URL = 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png';
+
+
+    var onEachFeature = function(feature, layer) {
+        if (feature.properties && feature.properties.nom) {
+            var popupContent = "<p>("+feature.id+") " + feature.geometry.type + ", "+feature.properties.nom+"</p>";
+            layer.bindPopup(popupContent);
+        }
+    }
+
+    var onEachPlace = function(feature, layer) {
+        if (feature.properties && feature.properties.name) {
+            var popupContent = "<p>("+feature.id+") " + feature.geometry.type + ", "+feature.properties.name+"</p>";
+            //console.log(popupContent);
+            layer.bindPopup(popupContent);
+        }
+    }
+
+    var getRegion = function(id){
+        regions.clearLayers();
+        $.get('../collab_api/regions/'+id, function(data) {
+
+            regions.addData(data.results.geoJson.features);
+
+            mapFull.fitBounds(regions.getBounds());
+            //console.log(regions);
+        });
+    }
+
+    var getPlaces = function(id){
+        lieux.clearLayers();
+        $.get('../collab_api/places/within/'+id, function(data) {
+
+            lieux.addData(data.results.geoJson.features);
+        });
+    }
+
+    var osm   = L.tileLayer(OSM_URL, {styleId: 22677, attribution: OSM_ATTR}),
+        hybrid  = L.tileLayer(STAMEN_TONER_HYBRID_URL, {styleId: 999,   attribution: STAMEN_ATTR}),
+        lines = L.tileLayer(STAMEN_TONER_LINES_URL, {styleId: 46561, attribution: STAMEN_ATTR}),
+        back  = L.tileLayer(STAMEN_TONER_BACKGROUND_URL, {styleId: 999,   attribution: STAMEN_ATTR}),
+        lite = L.tileLayer(STAMEN_TONER_LITE_URL, {styleId: 46561, attribution: STAMEN_ATTR}),
+        lieux = L.geoJson(null, {
+            pointToLayer: function (feature, latlng) {
+                if(typeof(categories[feature.properties.primary_category_id]) == 'undefined'){
+                    return  L.marker(latlng,{});
+                }
+                return L.marker(latlng, {icon: L.icon({
+                    iconUrl: "../collab_api/public/img/icons/"+categories[feature.properties.primary_category_id].i,
+                    iconSize: [32, 37],
+                    iconAnchor: [16, 37],
+                    popupAnchor: [0, -28]
+                })});
+            },
+            onEachFeature: onEachPlace
+        }),
+        regions = L.geoJson(null, {
+            onEachFeature: onEachFeature
+        });
+        categories = [];
+
+
+    // mapFull ==================
+    var mapFull = L.map('mapFull', {
+        center: [45.49,-73.66],
+        zoom: 12,
+        layers: [ lite, lieux, regions]
+    });
+
+
+
+    var baseLayers = {
+        "Open Street Map": osm,
+        "Toner Hybrid": hybrid,
+        "Toner Lines": lines,
+        "Toner Background": back,
+        "Toner Lite": lite
+    };
+
+    var featuresLayers = {
+        "Lieux" : lieux,
+        "Régions" : regions
+    }
+
+    L.control.layers(baseLayers,featuresLayers).addTo(mapFull);
+
+    // GET CATEGORIES LIST
+    $.get('../collab_api/categories', function(data) {
+         categories = data.results;
+        // GET REGIONS
+        $.get('../collab_api/regions/3', function(data) {
+            regions.addData(data.results.geoJson.features);
+        });
+
+        // GET POINT WITHIN REGION
+        $.get('../collab_api/places/within/3', function(data) {
+            lieux.addData(data.results.geoJson.features);
+        });
+    });
+
+    $.get('../collab_api/regions', function(data){
+
+        var select = $('#selRegions');
+        var optGroup, opt;
+        $(data.results.rows).each(function(index,item) {
+
+            if(optGroup != item.t_decoup && index !=0){
+                console.log(optGroup);
+                select.html( select.html()+'<optgroup label="'+optGroup+'">'+opt+'</optgroup>' );
+                 opt = '';
+            }
+            opt += '<option value="'+item.id+'">'+item.nom+'</option>';
+            optGroup = item.t_decoup;
+        });
+
+        select.bind('change', function(){
+            //console.log(select.val());
+            getRegion(select.val());
+            getPlaces(select.val());
+        });
+
+
+        var elm = $('.regions').find(".row");
+        var group, link= '';
+        $(data.results.rows).each(function(index,item) {
+
+            if(group != item.t_decoup && index !=0){
+                elm.html( elm.html()+'<div class="span4"><p class="lead">'+group+'</p><ul>'+link+'</ul></div>' );
+                link = '';
+            }
+
+            link += '<li><a href="#" onclick="return false;" id="_'+item.id+'">'+item.nom+'</a></li>';
+            group = item.t_decoup;
+        });
+
+        elm.find("a").bind('click', function(){
+
+            var id = this.id.substring(1);
+            getRegion(id);
+            getPlaces(id);
+        });
+
+    });
+
+</script>
+
+    
+    <div class="footer">
+        <hr />
+        <p class="quiet">&copy; 2013&ndash;2014 STEFLEF, &copy; 2010&ndash;2013 <a href="http://agafonkin.com/en">Vladimir Agafonkin</a>, 2010&ndash;2011 <a href="http://cloudmade.com">CloudMade</a>. Maps &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors.</p>
+    </div>
+</div>
+
+</body>
+</html>
