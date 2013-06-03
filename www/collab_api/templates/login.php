@@ -30,7 +30,7 @@
                 <h2>Se Connecter</h2>
                 <p>Veuillez vous connecter à l'aide de votre adresse courriel et de votre mot de passe.</p>
 
-                <form action="login" method="POST">
+                <form action="login" id="login-form" method="POST">
                     <p>Courriel:<br><input class="input-xlarge" type="text" name="email" id="email" placeholder="admin@admin.com" value="<?=$email_value?>" /> <span class="help-inline label label-important"><?=$email_error?></span></p>
                     <p>Mot de passe:<br><input class="input-xlarge" type="password" name="password" id="password" /> <span class="help-inline label label-important"><?=$password_error?></span></p>
                     <p><input type="submit" class="btn" value="Connexion" />

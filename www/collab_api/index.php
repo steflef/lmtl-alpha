@@ -76,7 +76,7 @@ $authenticate = function () use ($app, $di){
         if (!isset($_SESSION['user'])) {
             $_SESSION['urlRedirect'] = $app->request()->getPathInfo();
             $app->flash('error', 'Autorisation requise');
-            $app->redirect($di['baseUrl'].'login');
+            $app->redirect($di['baseUrl'].'login',303);
         }
     };
 };
@@ -137,6 +137,17 @@ $app->hook('slim.before.dispatch', function() use ($app, $di) {
 });
 // ***
 
+$app->hook('slim.before.dispatch', function() use ($app, $di) {
+    $req = $app->request();
+    if( $req->getUserAgent() == 'PHPUNIT'){
+        //$view = $app->view();
+        //$view->setTemplatesDirectory('/Applications/MAMP/htdocs/lmtl_alpha/www/collab_api/templates/');
+        $app->config('templates.path','/Applications/MAMP/htdocs/lmtl_alpha/www/collab_api/templates/');
+
+    }
+});
+// ***
+
 // ### HomePage -  */*
 // ### Main Endpoint (GET)[**AUTH**]
 // Show the dashboard
@@ -150,11 +161,6 @@ $app->get("/",  $authenticate($app), function () use ($app, $di) {
 // ### Datasets List (GET)
 // #### *JSON* - *STATIC CACHE*
 $app->get("/datasets", $apiCache($app, $di), function () use ($app, $di) {
-
-/*    $params = new stdClass;
-    $params->from = 'datasets';
-    $params->query = 'ORDER BY updated_at DESC';
-    processRequest( $app, $di, $params );*/
 
     $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
 
@@ -403,45 +409,6 @@ $app->get("/datasets/:id/places", $apiCache($app, $di), function ($datasetId) us
 });
 // ***
 
-// ### ******* TEST
-// ### API -  */datasets/:id/places*
-// ### Get a List of places for a Dataset  (GET)
-// #### *JSON* - *STATIC CACHE*
-$app->get("/datasets/:id/places_exp", function ($datasetId) use ($app, $di) {
-
-    $Request = $app->request();
-    // format and return response body in specified format
-    $mediaType = $Request->getMediaType();
-
-    echo '<pre><code>';
-    print_r($Request->get());
-    echo "<br>".$mediaType;
-    echo '</code></pre>';
-$app->stop();
-
-    $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
-
-    try{
-        $places = $CartoDB->getPlaces($datasetId);
-
-    }catch (\Exception $e){
-        $Response = new \CQAtlas\Helpers\Response($app->response(),400,$e->getMessage());
-        //$Response->addContent(array('trace' => $e->getTrace()[0]));
-        $Response->show();
-        $app->stop();
-    }
-
-    $Response = new \CQAtlas\Helpers\Response($app->response());
-    $Response->addContent(array('timestamp'=>time(),'results'=>$places));
-
-    // #### Cache the Response
-    $Cache = new \CQAtlas\Helpers\Cache($app, $di);
-    $Cache->save($Response->toJson());
-
-    $Response->show();
-});
-// ***
-
 // ### API -  */places/:id*
 // ### Get a Place  (GET)
 // #### *JSON* - *STATIC CACHE*
@@ -499,7 +466,7 @@ $app->get("/places/within/:id", $apiCache($app, $di), function ($id) use ($app, 
 // ### API -  */places/:id/near*
 // ### Get Places Near a Place (GET)
 // #### *Print JSON* - *STATIC CACHE*
-$app->get("/places/:id/near", $apiCache($app, $di), function ($placeId) use ($app, $di) {
+$app->get("/places/near/:id", $apiCache($app, $di), function ($placeId) use ($app, $di) {
 
     $CartoDB = new \CQAtlas\Helpers\CartoDB($di);
 
@@ -1029,7 +996,6 @@ $app->get("/login", function () use ($app) {
     }
 
     $app->render('login.php', array(
-        # 'error' => $error,
         'email_value' => $email_value,
         'email_error' => $email_error,
         'password_error' => $password_error,
@@ -1450,7 +1416,7 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
         }else
         {
             // #### Lng/Lat Validation
-            require 'models/geo.php';
+            require_once 'models/geo.php';
             $llErrors = 0;
             $llValids = 0;
             $rowCount = 0;
