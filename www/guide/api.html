@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>API · LMTL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="assets/css/docs.css" rel="stylesheet">
+    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="assets/ico/favicon.png">
+
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar">
+
+<!-- Navbar
+================================================== -->
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" href="http://collectifquartier.org/">Collectif Quartier</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li >
+                        <a href="./index.html">Accueil</a>
+                    </li>
+                    <li class="">
+                        <a href="./go.html">Pour commencer</a>
+                    </li>
+                    <li class="">
+                        <a href="./exemples.html">Exemples</a>
+                    </li>
+                    <li class="active">
+                        <a href="./api.html">API</a>
+                    </li>
+                    <li class="">
+                        <a href="./termes.html">Termes d'utilisation</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Subhead
+================================================== -->
+<header class="jumbotron subhead" id="overview">
+  <div class="container">
+    <h1>API</h1>
+    <p class="lead">Références et documentation</p>
+  </div>
+</header>
+
+
+  <div class="container">
+
+    <!-- Docs nav
+    ================================================== -->
+    <div class="row">
+      <div class="span3 bs-docs-sidebar">
+        <ul class="nav nav-list bs-docs-sidenav">
+          <li><a href="#request"><i class="icon-chevron-right"></i> Points d'entrée</a></li>
+            <li><a href="#format"><i class="icon-chevron-right"></i> Formats</a></li>
+            <li><a href="#entry-list"><i class="icon-chevron-right"></i> Liste des interfaces</a></li>
+
+          <li><a href="#contrib"><i class="icon-chevron-right"></i> Console</a></li>
+
+        </ul>
+      </div>
+      <div class="span9">
+
+          <section id="request">
+              <div class="page-header">
+                  <h1>Points d'entrée</h1>
+              </div>
+
+              <p class="lead">Tous les points d'entrée sont accessible via http et sont localisés à <strong>lmtl.collectifquartier.org/api</strong>. Par exemple, vous pouvez obtenir la liste des jeux de données disponibles en accédant à l'URL suivant:</p>
+              <div>
+                  <pre class="prettyprint"><code>http://lmtl.collectifquartier.org/api/v1/datasets</code></pre>
+              </div>
+              <p>Il est important d'indiquer la version de l'API.</p>
+              <div>
+                  <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/<span class="nocode">v1</span>/datasets</code></pre>
+              </div>
+
+          </section>
+
+          <section id="format">
+              <div class="page-header">
+                  <h1>Format</h1>
+              </div>
+
+              <p class="lead">Toutes les requêtes à l'API se font via la méthode <a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">GET</a> du protocol HTTP. L'API retourne des réponses en format
+                  <a href="http://www.json.org/">JSON</a>. Les requêtes à composantes spatiales retournent des réponses en format
+                  <a href="http://www.geojson.org/">GeoJSON</a>.</p>
+
+              <p>Prenez l'habitude d'ajouter le <em>media type</em> dans le <em>header</em> de la requête (ex.: application/json). Nous prévoyons supporter d'autres formats de réponses dans le futur et le media type sera utilisé pour évaluer le format demandé. Le format JSON restera le format par défaut.</p>
+
+          </section>
+
+          <section id="entry-list">
+              <div class="page-header">
+                  <h1>Liste des interfaces</h1>
+              </div>
+
+              <p class="lead">Voici la liste des points d'entrée publics. Vous pouvez tester ces points d'entrée via la
+                  <a href="#">console</a>.</p>
+
+              <h3>Jeux de données</h3>
+
+              <div class="api-point-block">
+                  <h4>Liste des jeux de données.</h4>
+                  <p>Description sommaire de chaque jeu de données. <span class="label">JSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">datasets</span></code></pre>
+                  </div>
+              </div>
+
+                <div class="api-point-block">
+                    <h4>Jeu de données spécifique.</h4>
+                    <p>Description détaillée d'un jeu de données. <span class="label">GeoJSON</span></p>
+
+                    <div>
+                        <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">datasets/:id</span></code></pre>
+                    </div>
+                    <p>La variable <strong>:id</strong> représente l'identifiant d'un jeu de données sous forme d'un nombre entier (ex.: datasets/<strong>34</strong>).</p>
+
+                </div>
+
+              <div class="api-point-block">
+                  <h4>Liste des lieux d'un jeu de données.</h4>
+                  <p>Description sommaire de chaque lieu faisant parti du jeu de données. <span class="label">GeoJSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">datasets/:id/places</span></code></pre>
+                  </div>
+                  <p>La variable <strong>:id</strong> représente l'identifiant d'un jeu de données sous forme d'un nombre entier (ex.: datasets/<strong>34</strong>/places).</p>
+              </div>
+
+              <h3>Lieux</h3>
+
+              <div class="api-point-block">
+                  <h4>Liste des lieux. <span class="label label-warning">À confirmer</span></h4>
+                  <p>Description sommaire de chaque lieu. <span class="label">GeoJSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">places</span></code></pre>
+                  </div>
+              </div>
+
+              <div class="api-point-block">
+                  <h4>Lieu spécifique.</h4>
+                  <p>Description détaillée d'un lieu. <span class="label">GeoJSON</span></p>
+
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">places/:id</span></code></pre>
+                  </div>
+                  <p>La variable <strong>:id</strong> représente l'identifiant d'un lieu sous forme d'un nombre entier (ex.: places/<strong>8</strong>).</p>
+
+              </div>
+
+              <div class="api-point-block">
+                  <h4>Liste des lieux à l'intérieur d'une région données.</h4>
+                  <p>Description sommaire de chaque lieu présant dans une région déterminée. <span class="label">GeoJSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">places/within/:id</span></code></pre>
+                  </div>
+                  <p>La variable <strong>:id</strong> représente l'identifiant d'une région sous la forme d'un nombre entier (ex.: places/within/<strong>5</strong>/places).</p>
+              </div>
+
+              <div class="api-point-block">
+                  <h4>Liste des lieux à proximité d'un lieu sélectionné.</h4>
+                  <p>Description sommaire de chaque lieu présant dans un rayon x du lieu sélectionné. <span class="label">GeoJSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">places/near/:id?r=:distance</span></code></pre>
+                  </div>
+                  <p>La variable <strong>:id</strong> représente l'identifiant d'un lieu sous la forme d'un nombre entier (ex.: places/near/<strong>5</strong>).</p>
+                  <p>La variable <strong>:distance</strong> représente le rayon en mètres à considérer pour la recherche (ex.:  places/near/5?r=<strong>50</strong>). Un rayon de 100 mètres est calculé par défaut si la variable <strong>r</strong> n'est pas spécifiée.</p>
+              </div>
+
+              <h3>Catégories</h3>
+
+              <div class="api-point-block">
+                  <h4>Liste des catégories.</h4>
+                  <p>Liste des catégories de lieux disponibles et des icônes associés. <span class="label">JSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">categories</span></code></pre>
+                  </div>
+              </div>
+
+              <h3>Régions</h3>
+
+              <div class="api-point-block">
+                  <h4>Liste des régions.</h4>
+                  <p>Liste complète des régions administratives. <span class="label">GeoJSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">regions</span></code></pre>
+                  </div>
+                  <p>Volumineux! > 2mb.</p>
+              </div>
+
+              <div class="api-point-block">
+                  <h4>Région spécifique.</h4>
+                  <p>Description détaillée d'une région. <span class="label">GeoJSON</span></p>
+
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">regions/:id</span></code></pre>
+                  </div>
+                  <p>La variable <strong>:id</strong> représente l'identifiant d'une région sous forme d'un nombre entier (ex.: regions/<strong>34</strong>).</p>
+
+              </div>
+
+              <div class="api-point-block">
+                  <h4>Groupe de lieux spécifiques.</h4>
+                  <p>Cette méthode vous permet de regrouper plusieurs lieux dans une même requête. <span class="label">GeoJSON</span></p>
+                  <div>
+                      <pre class="prettyprint "><code>http://lmtl.collectifquartier.org/api/v1/<span class="nocode">regions/in/:ids</span></code></pre>
+                  </div>
+                  <p>La variable <strong>:ids</strong> représente un ou plusieurs identifiants de régions délimités par des virgules. Chaque identifiant fait référence à une région sous la forme d'un nombre entier (ex.: regions/in/<strong>34,35,36</strong>).</p>
+              </div>
+          </section>
+
+          <section id="contrib">
+              <div class="page-header">
+                  <h1>Console</h1>
+              </div>
+              <p class="lead">La <a href="http://localhost:3000/LMTL_Public">console</a> vous permet de tester l'API à l'aide d'une interface visuelle.</p>
+              <a class="btn" href="http://localhost:3000/LMTL_Public">ACCÉDER À LA CONSOLE</a>
+
+          </section>
+
+
+
+
+
+
+      </div>
+    </div>
+
+  </div>
+
+
+
+    <!-- Footer
+    ================================================== -->
+    <footer class="footer">
+      <div class="container">
+        <p>Designed and built with all the love in the world by <a href="http://twitter.com/mdo" target="_blank">@mdo</a> and <a href="http://twitter.com/fat" target="_blank">@fat</a>.</p>
+        <p>Code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>, documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <p><a href="http://glyphicons.com">Glyphicons Free</a> licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <ul class="footer-links">
+          <li><a href="http://blog.getbootstrap.com">Blog</a></li>
+          <li class="muted">&middot;</li>
+          <li><a href="https://github.com/twitter/bootstrap/issues?state=open">Issues</a></li>
+          <li class="muted">&middot;</li>
+          <li><a href="https://github.com/twitter/bootstrap/blob/master/CHANGELOG.md">Changelog</a></li>
+        </ul>
+      </div>
+    </footer>
+
+
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+    <script src="assets/js/jquery.js"></script>
+    <script src="assets/js/bootstrap-transition.js"></script>
+    <script src="assets/js/bootstrap-alert.js"></script>
+    <script src="assets/js/bootstrap-modal.js"></script>
+    <script src="assets/js/bootstrap-dropdown.js"></script>
+    <script src="assets/js/bootstrap-scrollspy.js"></script>
+    <script src="assets/js/bootstrap-tab.js"></script>
+    <script src="assets/js/bootstrap-tooltip.js"></script>
+    <script src="assets/js/bootstrap-popover.js"></script>
+    <script src="assets/js/bootstrap-button.js"></script>
+    <script src="assets/js/bootstrap-collapse.js"></script>
+    <script src="assets/js/bootstrap-carousel.js"></script>
+    <script src="assets/js/bootstrap-typeahead.js"></script>
+    <script src="assets/js/bootstrap-affix.js"></script>
+
+    <script src="assets/js/holder/holder.js"></script>
+    <script src="assets/js/google-code-prettify/prettify.js"></script>
+
+    <script src="assets/js/application.js"></script>
+
+
+
+  </body>
+</html>

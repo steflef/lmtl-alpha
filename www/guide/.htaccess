@@ -1,0 +1,14 @@
+#RewriteEngine On
+
+# Localhost
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule ^ index.php [QSA,L]
+
+# Server Subdomain
+#RewriteBase /
+
+#RewriteCond %{HTTP_HOST} !^lmtl\.steflef\.com.*
+#RewriteRule ^/?(.*)$ http://lmtl.steflef.com/$1 [R,L]
+
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule ^(.*)$ index.php [QSA,L]
