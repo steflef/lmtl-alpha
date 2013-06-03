@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit
+        colors="true"
+        verbose="true"
+        stopOnFailure="false"
+        stopOnIncomplete="false"
+        stopOnSkipped="false"
+        processIsolation="false">
+    <php>
+        <ini name="display_errors" value="On"/>
+        <ini name="error_reporting" value="E_ALL"/>
+        <ini name="display_startup_errors" value="On"/>
+        <ini name="error_log" value="On"/>
+        <ini name="display_startup_errors" value="./php_error.log"/>
+    </php>
+    <testsuites>
+        <!--    <testsuite name="models">
+                    <directory suffix=".php">models</directory>
+                </testsuite> -->
+        <testsuite name="helpers">
+            <directory suffix=".php">helpers</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -222,47 +222,9 @@ class CartoDB
         return $this->_schema[$table];
     }
 
-/*    public function batchInsert($table,$data)
-    {
-        require_once 'vendor/cqatlas/cqatlas/CqUtil.php';
-        #Get Database Fields
-
-        $schema = $this->getSchema($table);
-
-        # Build Queries
-        $sqlStatements = array();
-        $prefix = "INSERT INTO $table ";
-        foreach ($data as $row) {
-            $fields = array();
-            $values = array();
-            foreach ($row as $dataField=>$dataValue) {
-
-                if(! array_key_exists($dataField,$schema['fields']) ){
-                    continue;
-                }
-                $fieldType = $schema['fields'][$dataField]['type'];
-                $insertData = ($fieldType === 'string')?"'".str_replace("'","''",$dataValue)."'":$dataValue;
-                $fields[]=$dataField;
-                $values[]=$insertData;
-            }
-            $sqlStatements[] = $prefix.'('.implode(',',$fields).') VALUES ('.implode(',',$values).');';
-        }
-
-
-        $postFields = array(
-            'q' => implode('',$sqlStatements),
-            'api_key' => $this->_di['cartodb_api_key']
-        );
-
-        $url = 'http://'.$this->_di['cartodb_subdomain'].'.'.$this->_di['cartodb_endpoint'];
-
-        $curlResult = \CqUtil::curlPost($url, json_encode($postFields));
-        return $curlResult;
-    }*/
-
     /**
      * @param string $tableName
-     * @param string $where
+     * @param string $query
      * @param string $type
      * @return array
      * @throws \Exception
@@ -408,7 +370,7 @@ class CartoDB
      * @return array
      * @throws \Exception
      */
-    public function getPlace($placeId)
+    public function getPlace($placeId = 0)
     {
         $tableName = 'places';
 
@@ -432,7 +394,7 @@ class CartoDB
      * @return array
      * @throws \Exception
      */
-    public function getPlaces($datasetId)
+    public function getPlaces($datasetId = 0)
     {
         $tableName = 'places';
 
@@ -460,7 +422,12 @@ class CartoDB
         return $Formatter->getOutput();
     }
 
-    public function getPlacesWithin($regionId)
+    /**
+     * @param int $regionId
+     * @return array
+     * @throws \Exception
+     */
+    public function getPlacesWithin($regionId = 0)
     {
         $tableName = 'places';
 
@@ -486,6 +453,10 @@ class CartoDB
         return $Formatter->getOutput();
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function getRegions()
     {
         $tableName = 'regions';
@@ -512,7 +483,11 @@ class CartoDB
         return $Formatter->getOutput();
     }
 
-
+    /**
+     * @param $ids
+     * @return array
+     * @throws \Exception
+     */
     public function getRegionsIn($ids)
     {
         $tableName = 'regions';
@@ -542,7 +517,12 @@ class CartoDB
         return $Formatter->getOutput();
     }
 
-    public function getRegion($id)
+    /**
+     * @param $id
+     * @return array
+     * @throws \Exception
+     */
+    public function getRegion($id = 0)
     {
         $tableName = 'regions';
 
@@ -602,12 +582,14 @@ class CartoDB
         $fields = $this->getFields($tableName);
         $sqlStatement = "SELECT ".implode(',',$fields).", ST_Distance( ST_Transform(ST_SetSRID(ST_Point($lon,$lat),4326),26918), ST_Transform( the_geom, 26918) ) AS distance ";
         $sqlStatement .="FROM $tableName ";
-        $sqlStatement .="WHERE ST_Distance( ST_Transform(ST_SetSRID(ST_Point($lon,$lat),4326),26918), ST_Transform( the_geom, 26918) )< $distance";
-        $sqlStatement .="AND place_id <> $placeId ";
+        $sqlStatement .="WHERE ST_Distance( ST_Transform(ST_SetSRID(ST_Point($lon,$lat),4326),26918), ST_Transform( the_geom, 26918) )< $distance ";
+        $sqlStatement .="AND id <> $placeId ";
         $sqlStatement .="ORDER BY distance asc ";
         $sqlStatement .="LIMIT 20";
 
         $client = new \Guzzle\Http\Client('http://steflef.cartodb.com/api/v2/sql');
+        print_r($sqlStatement);
+        exit;
         $response = $client->get('?q='.$sqlStatement.'&api_key='.$this->_di['cartodb_api_key'])->send();
 
         if($response->getStatusCode()!==200){

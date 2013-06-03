@@ -1,0 +1,74 @@
+<?php
+/**
+ * CLASS: Unit Tests for the CI PHP UNIT demonstration
+ * 
+ * @package default
+ * @author Chad Miller <cmiller@redvel.net>
+ * @link http://redvel.net
+ * @since 11/28/11
+ * 
+
+ Copyright (c) 2011 Chad Miller.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this 
+ software and associated documentation files (the "Software"), to deal in the Software 
+ without restriction, including without limitation the rights to use, copy, modify, 
+ merge, publish, distribute, sublicense, and/or sell copies of the Software, and to 
+ permit persons to whom the Software is furnished to do so, subject to the following 
+ conditions:
+
+ The above copyright notice and this permission notice shall be included in all 
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ */
+
+// prevent direct loading of this file
+if ( basename(__FILE__) == basename($_SERVER['PHP_SELF']) ) { die("This file cannot be loaded directly."); }
+
+require_once 'php-webdriver/__init__.php';
+
+class Test_Webdriver extends CI_TestCase {
+
+    /** 
+    * @var WebDriverSession
+    */
+    protected $_session;
+
+    public function setUp()
+    {
+    	log_message('debug',  "PHPUNIT::SETUP -> Test_Webdriver");
+        $web_driver = new WebDriver();
+         log_message('debug',  "PHPUNIT::SETUP #2 -> Test_Webdriver");
+        $this->_session = $web_driver->session('firefox');
+        log_message('debug',  "PHPUNIT::SETUP END -> Test_Webdriver");
+    }
+
+    public function tearDown()
+    {
+        $this->_session->close();
+        unset($this->_session);
+        log_message('debug',  "PHPUNIT::TEARDOWN -> Test_Webdriver");
+    }
+	
+    public function test_speaker_navigation_tab_goes_to_speaker_page()
+    {
+        $this->_session->open('http://localhost/gatlas_spring/tb3');
+
+        $this->_session->element(
+            'xpath', 
+            "/html[@class='no-js']/body/div[1][@class='topbar']/div[@class='topbar-inner']/div[@class='container-fluid']/ul[@class='nav']/li[2]/a"
+        )->click();
+
+        $this->assertSame(
+            'http://localhost/gatlas_spring/rao911', 
+            $this->_session->url()
+        );
+    }
+}

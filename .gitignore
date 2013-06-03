@@ -32,4 +32,4 @@
 /www/collab_api/public/img/icons/
 
 #tests
-/www/collab_api/tests/
+#/www/collab_api/tests/
