@@ -11,7 +11,7 @@ abstract class AbstractReader
 
     public function __construct($source,$headerRow=0)
     {
-        $this->_source = new \Ddeboer\DataImport\Source\Stream( $source );
+        $this->_source = new \Ddeboer\DataImport\Source\StreamSource( $source );
     }
 
     public function setHeaderRowNumber($number=0){
@@ -30,6 +30,7 @@ abstract class AbstractReader
     protected  function readRows(){
         foreach($this->_Reader as $row){
             $this->_rows[] = $row;
+            //print_r($row);
         }
         return $this->_rows;
     }

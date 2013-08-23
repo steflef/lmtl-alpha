@@ -574,7 +574,9 @@ class CartoDB
         return $response->json();
     }
 
-    public function getPlacesNear($placeId,$lon,$lat,$distance=5000)
+
+    // todo: fix SQL
+/*    public function getPlacesNear($placeId,$lon,$lat,$distance=5000)
     {
         $tableName = 'places';
 
@@ -598,7 +600,7 @@ class CartoDB
 
         $Formatter = new \CQAtlas\Helpers\ApiJsonFormatter($response->json(), $this->getSchema($tableName), $this);
         return $Formatter->getOutput();
-    }
+    }*/
 
     public function getDatasets()
     {

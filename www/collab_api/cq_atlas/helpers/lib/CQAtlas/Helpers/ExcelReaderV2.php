@@ -2,20 +2,24 @@
 
 namespace CQAtlas\Helpers;
 
+/**
+ * Class ExcelReaderV2
+ * @package CQAtlas\Helpers
+ */
 class ExcelReaderV2
 {
-
-
     protected $_source;
     protected $_header;
     protected $_rows;
     protected $_activeSheet=0;
     protected $_objPHPExcel;
 
+    /**
+     * @param $source
+     * @param int $headerRow
+     */
     public function __construct($source,$headerRow=0)
     {
-        //parent::__construct($source,$headerRow);
-
         $this->_source = $source;
         $this->_objPHPExcel = \PHPExcel_IOFactory::load($source);
         $this->_header = array();
@@ -24,6 +28,10 @@ class ExcelReaderV2
         return $this;
     }
 
+    /**
+     * @param int $activeSheet
+     * @return $this
+     */
     public function setDataWorksheet($activeSheet = 0)
     {
         $this->_activeSheet = $activeSheet;
@@ -31,6 +39,9 @@ class ExcelReaderV2
         return $this;
     }
 
+    /**
+     * @return array
+     */
     protected function getData(){
         $this->_objPHPExcel->setActiveSheetIndex($this->_activeSheet);
         $objWorksheet = $this->_objPHPExcel->getActiveSheet();
@@ -63,19 +74,32 @@ class ExcelReaderV2
         return $cells;
     }
 
+    /**
+     * @param int $number
+     * @return $this
+     */
     public function setHeaderRowNumber($number=0){
         $this->_Reader->setHeaderRowNumber($number);
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getHeaderRow(){
         return $this->_header;
     }
 
+    /**
+     * @return mixed
+     */
     public function getRows(){
         return $this->_rows;
     }
 
+    /**
+     * @return $this
+     */
     private function sanitize(){
         $cleanRows = array();
         $headers = $this->getHeaderRow();
@@ -88,6 +112,9 @@ class ExcelReaderV2
         return $this;
     }
 
+    /**
+     * @return int
+     */
     public function getRowsCount(){
         return count($this->_rows);
     }

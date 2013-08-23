@@ -66,6 +66,7 @@ class Test_CartoDB extends PHPUnit_Framework_TestCase
 
      public function test_selectAll(){
          fwrite(STDOUT, "---------------\n-> ".__METHOD__ . "\n");
+
          $tableName = 'places';
          $query = 'LIMIT 1';
          $type = 'list';
@@ -214,13 +215,13 @@ class Test_CartoDB extends PHPUnit_Framework_TestCase
         $this->assertGreaterThan(0,$results['total_rows']);
     }
 
-    public function test_getPlacesNear(){
+/*    public function test_getPlacesNear(){
         fwrite(STDOUT, "---------------\n-> ".__METHOD__ . "\n");
 
         $results = $this->CartoDB->getPlacesNear($this->placeId,$this->lon,$this->lat);
         $this->assertInternalType('array',$results);
         $this->assertEquals($results['geoJson']['type'],'FeatureCollection');
-    }
+    }*/
 
     public function test_getDatasets(){
         fwrite(STDOUT, "---------------\n-> ".__METHOD__ . "\n");

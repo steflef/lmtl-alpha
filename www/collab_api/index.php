@@ -1383,7 +1383,8 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
 
     // #### Guessing Fields Type
     $fieldsCount = count($fileData['header']);
-    for($i=0;$i<$fieldsCount-1;$i++){
+    for($i=0;$i<$fieldsCount;$i++){
+    //for($i=0;$i<$fieldsCount-1;$i++){
         $fieldData = $fileData['rows'][1][ $fileData['header'][$i] ];
         $type = gettype($fieldData);
         // ##### >> IF STRING > CHECK FOR DATE
@@ -1402,7 +1403,7 @@ $app->post("/upload", $apiAuthenticate($app), function () use ($app, $di) {
 
     // ### Spatial Fields Validation
     try{
-        $lonHeader = \CQAtlas\Helpers\CqUtil::matchKeys($fileData['header'], array('lon','lng','longitude'));
+        $lonHeader = \CQAtlas\Helpers\CqUtil::matchKeys($fileData['header'], array('lon','lng','long','longitude'));
         $latHeader = \CQAtlas\Helpers\CqUtil::matchKeys($fileData['header'], array('lat','latitude'));
         $locationHeader = \CQAtlas\Helpers\CqUtil::matchKeys($fileData['header'], array('adresse','address','addr','location','localisation'));
         if( $lonHeader === false || $latHeader === false){

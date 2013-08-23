@@ -1,8 +1,11 @@
 <?php
 
-//namespace Slim\Extras\Middleware;
 namespace CQAtlas\Helpers;
 
+/**
+ * Class Cache
+ * @package CQAtlas\Helpers
+ */
 class Cache
 {
     /**
@@ -16,21 +19,16 @@ class Cache
     protected $di;
 
     /**
-     * Constructor.
-     *
-     * @param string    $key        The CSRF token key name.
-     * @return void
+     * @param \Slim\Slim $app
+     * @param \Pimple $di
      */
     public function __construct(\Slim\Slim $app, \Pimple $di)
     {
         $this->app = $app;
         $this->di = $di;
-
         $this->key = $this->slugify($this->app->request()->getResourceUri());
-        //$this->key = md5($this->app->request()->getResourceUri());
     }
 
-    // ###Call Middleware
     public function call()
     {
 

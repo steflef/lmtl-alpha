@@ -463,7 +463,7 @@ angular.module('appMain', ['ngSanitize','ngUpload'])
             $rootScope.$broadcast("loadEnd");
             if(resp.substring(0,1)!="{"){
                 $scope.status = 400;
-                $scope.msg = "Une erreur est survenue en traitant le document.";
+                $scope.msg = "Une erreur est survenue en traitant le document";
                 return false;
             }
 

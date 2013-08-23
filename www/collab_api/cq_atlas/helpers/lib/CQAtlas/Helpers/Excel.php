@@ -1,7 +1,41 @@
 <?php
-
+/**
+ * LMTL - Lieux montréalais
+ *
+ * @author      Collectif Quartier <info@collectifquartier.org>
+ * @copyright   2013 Collectif Quartier
+ * @link        http://www.lmtl.collectifquartier.org
+ * @license     http://www.lmtl.collectifquartier.org/license
+ * @version     1.0.0
+ * @package     LMTL
+ *
+ * MIT LICENSE
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 namespace CQAtlas\Helpers;
 
+/**
+ * Class Excel
+ * Wrapper for PHPExcel
+ */
 class Excel
 {
     private $_objPHPExcel;
@@ -10,16 +44,21 @@ class Excel
     private $_objWriter;
     private $_name;
     private $_desc;
-
     private $_sheetProperties;
 
+    /**
+     * @param string $name
+     * @param string $desc
+     */
     public function __construct($name='', $desc='')
     {
         $this->_name = $name;
         $this->_desc = $desc;
-        //$this->setSheet();
     }
 
+    /**
+     * @return $this
+     */
     public function setSheet()
     {
         $this->_objPHPExcel = new \PHPExcel();
@@ -29,14 +68,18 @@ class Excel
         return $this;
     }
 
+    /**
+     * @param $sourcePath
+     */
     public function getSheet($sourcePath)
     {
         $this->_objPHPExcel = \PHPExcel_IOFactory::load($sourcePath);
         $this->_sheetProperties = $this->getSheetProperties();
-        //$this->getMetaWorksheet();
-        //$this->getDataWorksheet();
     }
 
+    /**
+     * @return mixed
+     */
     private function setSheetProperties()
     {
         // #####>> Set Sheet Properties#####
@@ -50,6 +93,9 @@ class Excel
         return $this->_objPHPExcel;
     }
 
+    /**
+     * @return array
+     */
     private function getSheetProperties()
     {
         // #####>> Set Sheet Properties#####
@@ -66,6 +112,9 @@ class Excel
         return $properties;
     }
 
+    /**
+     * @return mixed
+     */
     private function setMetaWorksheet()
     {
         $this->_objMetaWorksheet = new \PHPExcel_Worksheet($this->_objPHPExcel, 'Meta');
@@ -78,20 +127,10 @@ class Excel
         return $this->_objPHPExcel;
     }
 
-
-/*    public function setMetas($meta=array())
-    {
-        $this->_objPHPExcel->setActiveSheetIndex(0);
-        $rowCount =2;
-        foreach ($meta as $desc=>$val) {
-            $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $rowCount, $desc);
-            $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $rowCount, $val);
-            $rowCount++;
-        }
-        return $this;
-    }*/
-
-    // OBJ
+    /**
+     * @param $meta
+     * @return $this
+     */
     public function setMetas($meta)
     {
         $this->_objPHPExcel->setActiveSheetIndex(0);
@@ -105,18 +144,12 @@ class Excel
                 $rowCount++;
             }
         }
-
-/*        $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $rowCount, 'Jeu de données');
-        $rowCount++;
-        foreach ($meta->form as $attribute=>$obj) {
-            $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $rowCount, $attribute);
-            $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $rowCount, $obj->value);
-            $rowCount++;
-        }*/
-
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getMetas()
     {
         $this->_objPHPExcel->setActiveSheetIndex(1);
@@ -134,7 +167,9 @@ class Excel
         return $cells;
     }
 
-
+    /**
+     * @return mixed
+     */
     private function setDataWorksheet()
     {
         $this->_objDataWorksheet = new \PHPExcel_Worksheet($this->_objPHPExcel, 'Data');
@@ -143,21 +178,11 @@ class Excel
         return $this->_objPHPExcel;
     }
 
-/*    public function setDataHeaders($headers=array())
-    {
-        $this->_objPHPExcel->setActiveSheetIndex(1);
-
-        // #####>> Sets Headers to Data Worksheet#####
-        $colCount = 0;
-        foreach ($headers as $header) {
-            $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($colCount, 1, $header['title']);
-            $colCount++;
-        }
-
-        return $this;
-    }*/
-
-    // OBJ
+    /**
+     * @param $properties
+     * @param $features
+     * @return $this
+     */
     public function setDataHeaders($properties, $features)
     {
         $this->_objPHPExcel->setActiveSheetIndex(1);
@@ -177,21 +202,11 @@ class Excel
         return $this;
     }
 
-
-    // #####>> Add Data to Data Worksheet#####
-/*    public function setData($data=array())
-    {
-        $this->_objPHPExcel->setActiveSheetIndex(1);
-
-        for($r=0;$r<count($data);$r++){
-            for($c=0;$c<count($data[$r]);$c++){
-                $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($c, $r+2, $data[$r][$c]);
-            }
-        }
-        return $this;
-    }*/
-
-    // OBJ
+    /**
+     * @param $data
+     * @param $properties
+     * @return $this
+     */
     public function setData($data, $properties)
     {
         $this->_objPHPExcel->setActiveSheetIndex(1);
@@ -208,10 +223,6 @@ class Excel
                 $column ++;
 
             foreach ($d->_geo as $g=>$v) {
-/*                echo '<pre><code>';
-                print_r($g);
-                print_r($v);
-                echo '</code></pre>';*/
                 $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($column, $row+2, $v);
                 $column ++;
             }
@@ -219,16 +230,13 @@ class Excel
             $row ++;
         }
 
-/*
-        for($r=0;$r<count($data);$r++){
-            for($c=0;$c<count($data[$r]);$c++){
-                $this->_objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($c, $r+2, $data[$r][$c]);
-            }
-        }*/
         return $this;
     }
 
-    // OBJ
+    /**
+     * @param $properties
+     * @return $this
+     */
     public function setProperties($properties)
     {
         $this->_objMetaWorksheet = new \PHPExcel_Worksheet($this->_objPHPExcel, 'Properties');
@@ -251,6 +259,9 @@ class Excel
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getProperties(){
         $this->_objPHPExcel->setActiveSheetIndex(3);
         $objWorksheet = $this->_objPHPExcel->getActiveSheet();
@@ -282,6 +293,9 @@ class Excel
         return $cells;
     }
 
+    /**
+     * @return array
+     */
     public function getData(){
         $this->_objPHPExcel->setActiveSheetIndex(2);
         $objWorksheet = $this->_objPHPExcel->getActiveSheet();
@@ -313,6 +327,11 @@ class Excel
         return $cells;
     }
 
+    /**
+     * @param string $dir
+     * @param string $fileName
+     * @return $this
+     */
     public function save($dir='',$fileName='')
     {
         $this->_objWriter = new \PHPExcel_Writer_Excel2007($this->_objPHPExcel);

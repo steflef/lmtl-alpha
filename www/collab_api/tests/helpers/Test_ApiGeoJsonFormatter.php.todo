@@ -1,0 +1,110 @@
+<?php
+
+class Test_ApiGeoJsonFormatter extends PHPUnit_Framework_TestCase
+{
+
+    protected $Formatter;
+    protected $schema = array(
+                            'fields'=>array(
+                                'address'   => array('type'=> 'string'),
+                                'city'      => array('type' =>'string'),
+                                'latitude'  => array('type' =>'number'),
+                                'longitude' => array('type' =>'number'),
+                                'the_geom'=> array('type' =>'geom'),
+                                'postal_code' =>array('type' =>'string'),
+                                'tel_number' =>array('type' =>'string'),
+                                'website'   => array('type' =>'string'),
+                                'created_by' => array('type' =>'number'),
+                                'dataset_id' => array('type' =>'number'),
+                                'description'   => array('type' =>'string'),
+                                'name'   => array('type' =>'string'),
+                                'id'  => array('type' =>'number'),
+                                'privacy'   => array('type' =>'number'),
+                                'status'    => array('type' =>'number'),
+                                'primary_category_id' => array('type' =>'number'),
+                                'secondary_category_id' => array('type' =>'number'),
+                                'tags'      => array('type' =>'string'),
+                                'updated_at'=> array('type' =>'string')
+                            ),
+                            'output_tmpl'=>array(
+                                'id'        => 'id',
+                                'name'      => 'name',
+                                'dataset'   => 'dataset_id',
+                                'description'   => 'description',
+                                'location'  => array(
+                                    'address'       => 'address',
+                                    'city'          => 'city',
+                                    'latitude'      => 'latitude',
+                                    'longitude'     => 'longitude',
+                                    'postal_code'   => 'postal_code'
+                                ),
+                                'contacts'  => array(
+                                    'phone'   => 'tel_number',
+                                    'website' => 'website'
+                                ),
+                                'categories'  => array(
+                                    'primary_category'   => 'primary_category_id',
+                                    'secondary_category' => 'secondary_category_id'
+                                ),
+                                'tags' => 'tags',
+                                'updated_at' => 'updated_at'
+                            ),
+                            'output_exp'=>array(
+                                'tags' => array(
+                                    'func' => 'Json2array',
+                                    'dependency' => 'tags'
+                                ),
+                                'the_geom' => array(
+                                    'func' => 'Json2array',
+                                    'dependency' => 'the_geom'
+                                )
+                            )
+                        );
+
+
+    public function __construct (){}
+
+    public static function setUpBeforeClass()
+    {
+        fwrite(STDOUT, __METHOD__ . "\n");
+    }
+
+    function setUp(){
+        fwrite(STDOUT, __METHOD__ . "\n");
+        $di = new Pimple();
+
+        require(__DIR__ .'/../../cq_atlas/config/config.php');
+        // #### Fluent.SQL Factory
+        $di['db'] = $di->share(function () use ($di){
+            $pdo = new PDO($di['dbDriver'].':'.$di['dbFile']);
+            $fpdo = new \FluentPDO($pdo);
+
+            return $fpdo;
+        });
+
+        $this->Formatter = new \CQAtlas\Helpers\ApiGeoJsonFormatter($response->json(), $this->schema, $this);
+        return $Formatter->getOutput();
+
+    }
+
+    public function test_getSchema()
+    {
+        fwrite(STDOUT, "---------------\n-> ".__METHOD__ . "\n");
+        // PLACES
+        $placesSchema = $this->CartoDB->getSchema("places");
+        $this->assertInternalType('array',$placesSchema);
+
+        // DATASETS
+        $datasetsSchema = $this->CartoDB->getSchema("datasets");
+        $this->assertInternalType('array',$datasetsSchema);
+
+        // CATEGORIES
+        $catSchema = $this->CartoDB->getSchema("categories");
+        $this->assertInternalType('array',$catSchema);
+
+        // REGIONS
+        $regionsSchema = $this->CartoDB->getSchema("regions");
+        $this->assertInternalType('array',$regionsSchema);
+
+
+}
